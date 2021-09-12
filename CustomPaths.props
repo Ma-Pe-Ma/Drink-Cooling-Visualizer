@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros">
+    <CUSTOM_INCLUDE_DIR>C:/PATH/TO/INCLUDE_DIR</CUSTOM_INCLUDE_DIR>
+    <CUSTOM_LIB_DIR>C:/PATH/TO/LIB_DIR</CUSTOM_LIB_DIR>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemDefinitionGroup />
+  <ItemGroup>
+    <BuildMacro Include="CUSTOM_INCLUDE_DIR">
+      <Value>$(CUSTOM_INCLUDE_DIR)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="CUSTOM_LIB_DIR">
+      <Value>$(CUSTOM_LIB_DIR)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+  </ItemGroup>
+</Project>
