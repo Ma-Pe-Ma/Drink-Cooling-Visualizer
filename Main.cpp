@@ -7,8 +7,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include <tinycolormap.hpp>
-
 #include "imgui/imgui.h"
 #include "imgui/backends/imgui_impl_glfw.h"
 #include "imgui/backends/imgui_impl_opengl3.h"
@@ -16,10 +14,10 @@
 #include "DrinkCooling.h"
 #include "Drawing.h"
 
+#include "Icon.h"
+
 #define WIDTH 1280
 #define HEIGHT 720
-
-tinycolormap::Color color = tinycolormap::GetColor(0, tinycolormap::ColormapType::Viridis);
 
 int SCR_WIDTH = WIDTH;
 int SCR_HEIGHT = HEIGHT;
@@ -45,9 +43,15 @@ int main() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		
-	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Drink Cooling Visualizer - Margitai Peter", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, u8"Drink Cooling Visualizer - Margitai Péter", NULL, NULL);
 	//glfwSetWindowPosCallback(window, window_pos_callback);
 	glfwSetWindowPos(window, 100, 100);
+
+	GLFWimage windowIcon;
+	windowIcon.pixels = icon;
+	windowIcon.height = 32;
+	windowIcon.width = 32;
+	glfwSetWindowIcon(window, 1, &windowIcon);
 
 	if (window == NULL) {
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -67,7 +71,6 @@ int main() {
 		std::cin >> a;
 		return -1;
 	}
-
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -95,7 +98,21 @@ int main() {
 
 	glEnable(GL_DEPTH_TEST);
 
+	std::chrono::system_clock::time_point prevFrameStart = std::chrono::system_clock::now();
+
+	ImVec2 windowSize(400, SCR_HEIGHT);
+
 	while (!glfwWindowShouldClose(window)) {
+		std::chrono::duration<double, std::milli> work_time = std::chrono::system_clock::now() - prevFrameStart;
+
+		if (work_time.count() < 1000.0f / 30) {
+			std::chrono::duration<double, std::milli> delta_ms(1000.0f / 30 - work_time.count());
+			auto delta_ms_duration = std::chrono::duration_cast<std::chrono::milliseconds>(delta_ms);
+			std::this_thread::sleep_for(std::chrono::milliseconds(delta_ms_duration.count()));
+		}
+
+		prevFrameStart = std::chrono::system_clock::now();
+
 		glClearColor(0.45, 0.55, 0.60, 1.00);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);				
 
@@ -112,7 +129,8 @@ int main() {
 
 		static ImVec2 windowPosition(0, 0);
 		ImGui::SetNextWindowPos(windowPosition);
-		static ImVec2 windowSize(400, SCR_HEIGHT);
+		//static ImVec2 windowSize(400, SCR_HEIGHT);
+		windowSize = ImVec2(400, SCR_HEIGHT);
 		ImGui::SetNextWindowSize(windowSize);
 
 		ImGui::Begin("Drink Cooling", nullptr, ImGuiWindowFlags_NoResize);		
@@ -136,9 +154,7 @@ int main() {
 
 		ImGui::SameLine();
 		if (ImGui::Button("+")) {
-			if (drinkCoolings.size() < 10) {
-				drinkCoolings.push_back(std::unique_ptr<DrinkCooling>(new DrinkCooling()));
-			}
+			drinkCoolings.push_back(std::unique_ptr<DrinkCooling>(new DrinkCooling()));
 		}
 		
 		ImGui::NewLine();		
@@ -214,7 +230,7 @@ int main() {
 			}
 
 			int* sectionAngle = selectedShared->getGeometricProperties()->getSectionAngleGUI();
-			if (ImGui::InputInt("Section angle", sectionAngle, 0, 180, ImGuiInputTextFlags_EnterReturnsTrue)) {
+			if (ImGui::InputInt(u8"Section angle [°]", sectionAngle, 0, 180, ImGuiInputTextFlags_EnterReturnsTrue)) {
 				if (*sectionAngle < 0) {
 					*sectionAngle = 1;
 				}
@@ -254,14 +270,14 @@ int main() {
 
 			if (*selectedShared->getEndTypePointer() == 0) {
 				float* targeTemperature = processProperties->getTargetTemperaturePointer();
-				if (ImGui::InputFloat("Target tempreature [°C]", targeTemperature, -50.0f, 100.0f,"%.1f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+				if (ImGui::InputFloat(u8"Target tempreature [°C]", targeTemperature, -50.0f, 100.0f,"%.1f", ImGuiInputTextFlags_EnterReturnsTrue)) {
 					selectedShared->updateProcessProperties();
 				};
 			}
 
 			ImGui::Text("Time properties");
 			if (*selectedShared->getEndTypePointer() == 1) {
-				if (ImGui::InputInt("Timespan [m]", processProperties->getTargetTimeSpanPointer(), 1, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
+				if (ImGui::InputInt("Timespan [min]", processProperties->getTargetTimeSpanPointer(), 1, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
 					selectedShared->updateProcessProperties();
 				}
 			}
@@ -279,7 +295,7 @@ int main() {
 
 			Drawing* drawing = selectedShared->getDrawing();
 			ImGui::Text("Drawing Properties");
-			if (ImGui::SliderFloat("Camera distance [mm]", drawing->getCameraDistancePointer(), 0, 100, "%.1f")) {
+			if (ImGui::SliderFloat("Camera distance [mm]", drawing->getCameraDistancePointer(), 5, 100, "%.1f")) {
 				drawing->setCameraDistance(*drawing->getCameraDistancePointer());
 			}
 			
@@ -298,8 +314,8 @@ int main() {
 			if (currentState == 2) {
 				ImGui::Text("Results");
 
-				if (selectedShared->getEndTypePointer() == 0) {
-					std::string timeTaken = "Time taken: " + floatToStringWithPrecision(processProperties->getResultTimeSpan());
+				if (*selectedShared->getEndTypePointer() == 0) {
+					std::string timeTaken = "Time taken: " + floatToStringWithPrecision(processProperties->getResultTimeSpan(), 0) + " [s]";
 					ImGui::Text(timeTaken.c_str());
 				}
 				else {
@@ -336,15 +352,17 @@ int main() {
 
 				ImGui::PushItemWidth(200);
 
-				static int snapshotID = 0;
-				if (ImGui::SliderInt("Snapshots", &snapshotID, 0, selectedShared->getSnapshotSize()-1)) {
-					selectedShared->setCurrentSnapshot(snapshotID);
+				if (ImGui::SliderInt("Snapshots", selectedShared->getCurrentSnapshotID(), 0, selectedShared->getSnapshotSize()-1)) {
+					selectedShared->setCurrentSnapshot(*selectedShared->getCurrentSnapshotID());
 				}
 
 				std::string snapshotTimeText = "Snapshot time: " + floatToStringWithPrecision(selectedShared->getCurrentSnapshotTime(), 0) + " s";
 				ImGui::Text(snapshotTimeText.c_str());
-				std::string snapshotAverageTempText = "Average temperature: " + floatToStringWithPrecision(selectedShared->getCurrentSnapshotAverateTemperature()) + "°C";
+				std::string snapshotAverageTempText = u8"Average temperature: " + floatToStringWithPrecision(selectedShared->getCurrentSnapshotAverateTemperature()) + u8" °C";
 				ImGui::Text(snapshotAverageTempText.c_str());
+
+				std::string processTimeString = u8"(Calculation time: " + floatToStringWithPrecision(selectedShared->getProcessLength(), 1) + "s)";
+				ImGui::Text(processTimeString.c_str());				
 			}
 
 			ImGui::PopItemWidth();
@@ -359,6 +377,11 @@ int main() {
 		glfwPollEvents();
 	}
 
-	glfwTerminate();		
+	glfwTerminate();
+
+	for (auto it = drinkCoolings.begin(); it != drinkCoolings.end(); it++) {
+		(*it)->stop();
+	}
+
 	return 0;
 }

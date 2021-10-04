@@ -63,6 +63,10 @@ private:
 	std::weak_ptr<Snapshot> current;
 
 	unsigned int mapTextureId;
+	std::chrono::system_clock::time_point processStartTime;
+	float processLength = 0;
+
+	int currentSnapshotId = 0;
 
 public:
 	DrinkCooling();
@@ -141,6 +145,18 @@ public:
 
 	unsigned int getMapTexture() {
 		return drawing.getTexure();
+	}
+
+	void stop() {
+		calculating.stop();
+	}
+
+	float getProcessLength() {
+		return processLength;
+	}
+
+	int* getCurrentSnapshotID() {
+		return &currentSnapshotId;
 	}
 };
 

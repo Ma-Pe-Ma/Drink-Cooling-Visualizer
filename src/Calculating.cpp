@@ -58,8 +58,6 @@ bool Calculating::checkFinished() {
 
 
 Calculating::~Calculating() {
-	thread.detach();
-
 	destroy();
 }
 
@@ -94,6 +92,7 @@ void Calculating::calculate() {
 	std::cout << "\tInitial Temperature: " << *processProperties->getInitialTemperaturePointer() << std::endl;
 	std::cout << "\tEnvironment Temperature: " << *processProperties->getEnvironmentTemperaturePointer() << std::endl;
 
+	runProcess.store(true);
 
 	if (*endType == 0) {
 		std::cout << "\tTarge temperature: " << *processProperties->getTargetTemperaturePointer() << std::endl;
@@ -116,7 +115,7 @@ void Calculating::calculateTargetTemperature() {
 
 	float lastSnapshotTime = 0;
 
-	while (true) {
+	while (runProcess.load()) {
 		float currentTime = currentTickNumber++ * timeStep;
 		unsigned int ellapsedSecs = round(currentTime);
 
@@ -155,7 +154,7 @@ void Calculating::calculateTimeSpan() {
 
 	std::cout << "timeticks: " << timeticks << std::endl;
 
-	for (int t = 1; t < timeticks + 1; t++) {
+	for (int t = 1; t < (timeticks + 1) && runProcess.load(); t++) {
 		float currentTime = t * timeStep;
 
 		unsigned int ellapsedSecs = round(currentTime);
@@ -182,16 +181,14 @@ void Calculating::calculateTimeSpan() {
 	finished.set_value(true);
 }
 
+void Calculating::stop() {
+	if (runProcess.load()) {
+		runProcess.store(false);
+		thread.join();
+	}
+}
+
 void Calculating::calculateTimeStep(bool debug) {
-	float max = 0;
-	float min = 600;
-
-	int maxi = -1;
-	int maxj = -1;
-
-	int mini = -1;
-	int minj = -1;
-
 	float transferConstant = materialProperties->getTransferConstant();
 	float conductionConstant = materialProperties->getConductionConstant();
 	float environmentTemperature = *processProperties->getEnvironmentTemperaturePointer();
@@ -232,68 +229,31 @@ void Calculating::calculateTimeStep(bool debug) {
 
 				float axisComp;
 
-				// transfer at bottom of the cylinder
-				if (j == 1) {
-					axisComp = -transferConstant * (previousHeatMap[i][j] - environmentTemperature) / axisSectionLengths[0] * timeStep;
-				}
-				// transfer at top of the cylinder
-				else if (j == axisPointNr - 2) {
-					axisComp = -transferConstant * (previousHeatMap[i][j] - environmentTemperature) / axisSectionLengths[axisPointNr - 2] * timeStep;
-				}
-				// conduction inside the material
-				else {
-					float temperatureDifferenceBydz;
-
-					if (j > (axisPointNr - 1) / 2) {
-						temperatureDifferenceBydz = (previousHeatMap[i][j + 1] - previousHeatMap[i][j]) / axisSectionLengths[j];
+				//calculating bottom part
+				if (j < axisPointNr / 2 + 1) {
+					// transfer at bottom of the cylinder
+					if (j == 1) {
+						axisComp = -transferConstant * (previousHeatMap[i][j] - environmentTemperature) / axisSectionLengths[0] * timeStep;
 					}
+					// conduction inside the material
 					else {
-						temperatureDifferenceBydz = (previousHeatMap[i][j - 1] - previousHeatMap[i][j]) / axisSectionLengths[j];
+						axisComp = conductionConstant * (previousHeatMap[i][j - 1] - previousHeatMap[i][j]) / (axisSectionLengths[j] * axisSectionLengths[j] ) * timeStep;
+
+						//middle section gets heat from bot directions
+						if (j == axisPointNr / 2) {
+							axisComp *= 2;
+						}
 					}
 
-					axisComp = conductionConstant * temperatureDifferenceBydz / axisSectionLengths[j] * timeStep;
+					currentHeatMap[i][j] = previousHeatMap[i][j] + radComp + axisComp;
 				}
-
-				currentHeatMap[i][j] = previousHeatMap[i][j] + radComp + axisComp;
-
-				if (currentHeatMap[i][j] > max) {
-					max = currentHeatMap[i][j];
-					maxi = i;
-					maxj = j;
+				//symmetrical top part
+				else {
+					currentHeatMap[i][j] = currentHeatMap[i][axisPointNr - 1 - j];
 				}
-
-				if (currentHeatMap[i][j] < min) {
-					min = currentHeatMap[i][j];
-					mini = i;
-					minj = j;
-				}
-
-				/*if (i ==10 && j == 10 && previousHeatMap[i][j] > 12 && previousHeatMap[i][j] < 13) {
-					std::cout << "radcomp: " << radComp << std::endl;
-					std::cout << "axiscomp: " << axisComp << std::endl;
-					std::cout << "axis[0][20] " << currentHeatMap[0][20] << std::endl;
-				}
-
-				if (i == 0 && j == 1) {
-					static unsigned int valami = 0;
-					if (++valami < 20) {
-						std::cout << "rad: " << radComp << ", ax: " << axisComp << ", prev: " << previousHeatMap[i][j] << std::endl;
-
-						std::cout << "axisdelta[0]: " << axisSectionLengths[0] << std::endl;
-					}
-				}*/
 			}
 		}
 	}
-
-	/*if (debug) {
-		std::cout << "max: " << max << ", i: " << maxi << ", j: " << maxj << std::endl;
-		std::cout << "min: " << min << ", i: " << mini << ", j: " << minj << std::endl;
-
-		for (int i = 0; i < axisPointNr; i++) {
-			std::cout << "tengely " << i << ": " << currentHeatMap[30][i] << std::endl;
-		}
-	}*/
 
 	float** temp = previousHeatMap;
 	previousHeatMap = currentHeatMap;
@@ -302,13 +262,6 @@ void Calculating::calculateTimeStep(bool debug) {
 
 float Calculating::getAverageTemperature(float** heatMap) {
 	float sumWeigthedTemp = 0;
-
-	bool once = true;
-
-	int check = 15;
-
-	int higherThanCheck = 0;
-	int lowerThanCheck = 0;
 
 	int radiusPointNr = geometricProperties->getRadiusPointNr();
 	int axisPointNr = geometricProperties->getAxisPointNr();
@@ -321,22 +274,9 @@ float Calculating::getAverageTemperature(float** heatMap) {
 			float avTemp = (heatMap[i][j] + heatMap[i][j + 1] + heatMap[i + 1][j] + heatMap[i + 1][j + 1]) / 4;
 			float body = (PI * (radiusPoints[i + 1] * radiusPoints[i + 1] - radiusPoints[i] * radiusPoints[i]) * (axisPoints[j + 1] - axisPoints[j]));
 
-			if (avTemp > check) {
-				higherThanCheck++;
-			}
-			else {
-				lowerThanCheck++;
-			}
-
 			sumWeigthedTemp += avTemp * body;
 		}
 	}
 
-	//std::cout << "sum weight temp: " << sumWeigthedTemp << std::endl;
-
-	float averageTemp = sumWeigthedTemp / geometricProperties->getVolume();
-	//std::cout << "Average temp: " << averageTemp << std::endl;
-	//std::cout << "higher than "<<check <<": " << higherThanCheck << "lower than 15: " << lowerThanCheck << std::endl;	
-
-	return averageTemp;
+	return sumWeigthedTemp / geometricProperties->getVolume();
 }

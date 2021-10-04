@@ -24,6 +24,7 @@ DrinkCooling::DrinkCooling() {
 	drawing.update();
 
 	current = snapshots[0];
+	current.lock()->generateBuffers();
 }
 
 void DrinkCooling::updateGeometry() {
@@ -31,6 +32,7 @@ void DrinkCooling::updateGeometry() {
 	geometricProperties.update();
 	calculating.update();
 	current = snapshots[0];
+	current.lock()->generateBuffers();
 	drawing.update();
 	drawing.determineCameraMatrix();
 	std::cout << "Geometry properties updated!" << std::endl;
@@ -41,6 +43,7 @@ void DrinkCooling::updateProcessProperties() {
 	calculating.destroy();
 	calculating.update();
 	current = snapshots[0];
+	current.lock()->generateBuffers();
 	std::cout << "Process properties updated!" << std::endl;
 }
 
@@ -55,14 +58,26 @@ void DrinkCooling::visualize() {
 
 void DrinkCooling::launchProcess() {
 	state = 1;
-	calculating.calculate();
 
+	*geometricProperties.getAxisNrGUI() += *geometricProperties.getAxisNrGUI() % 2;
+	updateGeometry();
+
+	processStartTime = std::chrono::system_clock::now();
+
+	calculating.calculate();
 	drawing.initializeMap();
 }
 
 void DrinkCooling::checkProcesFinish() {
 	if (calculating.checkFinished()) {
-		state = 2;
+		state = 2;		
+
+		std::chrono::duration<double, std::milli> work_time = std::chrono::system_clock::now() - processStartTime;
+		processLength = work_time.count() / 1000;
+
+		for (auto snapshot = ++snapshots.begin(); snapshot != snapshots.end(); ++snapshot) {
+			(*snapshot)->generateBuffers();
+		}
 	}
 }
 

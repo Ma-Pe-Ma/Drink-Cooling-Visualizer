@@ -33,6 +33,7 @@ class Calculating {
 	std::promise<bool> finished;
 	std::future<bool> finishedFuture;
 	std::thread thread;
+	std::atomic<bool> runProcess;
 
 public:
 	//Calculating(int*, GeometricProperties*, ProcessProperties*, MaterialProperties*, std::vector<std::shared_ptr<Snapshot>>*);
@@ -46,6 +47,7 @@ public:
 	~Calculating();
 
 	bool checkFinished();
+	void stop();
 };
 
 #endif

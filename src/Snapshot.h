@@ -36,46 +36,48 @@ public:
 	~Snapshot();
 
 	unsigned int getVBO() {
-		if (vbo == 0) {
+		return vbo;
+	}
+
+	unsigned int getTopVbo() {
+		return topVbo;
+	}
+
+	unsigned int getSideVbo() {
+		return sideVbo;
+	}
+
+	float getAverageTemperature() {
+		return averageTemperature;
+	}
+
+	void generateBuffers() {
+		
 			glGenBuffers(1, &vbo);
 			glBindBuffer(GL_ARRAY_BUFFER, vbo);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertexSize, this->vertexArray, GL_STATIC_DRAW);
 
 			delete[] vertexArray;
 			vertexArray = nullptr;
-		}
+		
 
-		return vbo;
-	}
-
-	unsigned int getTopVbo() {
-		if (topVbo == 0) {
+		
 			glGenBuffers(1, &topVbo);
 			glBindBuffer(GL_ARRAY_BUFFER, topVbo);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(float) * topVertexSize, this->topVertexArray, GL_STATIC_DRAW);
 
 			delete[] topVertexArray;
 			topVertexArray = nullptr;
-		}
+		
 
-		return topVbo;
-	}
-
-	unsigned int getSideVbo() {
-		if (sideVbo == 0) {
+		
 			glGenBuffers(1, &sideVbo);
 			glBindBuffer(GL_ARRAY_BUFFER, sideVbo);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(float) * sideVertexSize, this->sideVertexArray, GL_STATIC_DRAW);
-			
+
 			delete[] sideVertexArray;
 			sideVertexArray = nullptr;
-		}
-
-		return sideVbo;
-	}
-
-	float getAverageTemperature() {
-		return averageTemperature;
+		
 	}
 
 	int getTime() {

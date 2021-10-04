@@ -42,8 +42,8 @@ private:
 	float cameraHeight = 0;
 
 	//Drawing properties
-	bool verticeSwitch = true;
-	bool lineSwitch = true;
+	bool verticeSwitch = false;
+	bool lineSwitch = false;
 	bool surfaceSwitch = true;
 
 	unsigned int vao;

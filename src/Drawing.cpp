@@ -13,12 +13,12 @@ void Drawing::initializeClass() {
 	Drawing::mapShader = new Shader("Shaders/Map.vs", "Shaders/Map.fs");
 
 	shader->use();
-	projectionMatrix = glm::perspective<float>(glm::radians(90.0f), 1280.0f / 720.0f, 0.1f, 100.0f);
+	projectionMatrix = glm::perspective<float>(glm::radians(90.0f), 1280.0f / 720.0f, 0.1f,200.0f);
 	shader->setMat4("projectionMatrix", projectionMatrix);
 }
 
 void Drawing::updateProjectionMatrix(int x, int y) {
-	projectionMatrix = glm::perspective<float>(glm::radians(90.0f), float(x) / float(y), 0.1f, 100.0f);
+	projectionMatrix = glm::perspective<float>(glm::radians(90.0f), float(x) / float(y), 0.1f, 200.0f);
 
 	shader->use();
 	shader->setMat4("projectionMatrix", projectionMatrix);
