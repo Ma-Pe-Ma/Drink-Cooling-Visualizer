@@ -15,13 +15,13 @@ There are four type of parameters which have to be specified:
 * can's geometric properties - height and radius and their division factors,  the radiuses are not divided equally but they are diveded in a way that the generated volumes are equal.
 * drink's material properties - self-explanatory (the default values are the water's parameters)
 * temperature properties - self explanatory
-* time properties: the time-step is the time-discretization value, while the snapshot value is the time difference between two stored states (not all states are stored as they would need much memory and at low time step values technically no differences can be seen between to neighbouring states)
+* time properties: the time-step is the time-discretization value, while the snapshot value is the time difference between two stored states (Note: not all states are stored as they would need much memory and at low time-step values technically no differences can be seen between to neighbouring states)
 
 You can manipulate the camera at any time. The camare can move in a cylindrical coordinate system and it always looks at the can/origo.
 
-After setting up the process, press start, and the calculation begins. The length of the calculation depends on the geometry/time discretization and on the temperature conditions, naturally. The default process should only take a moment to finish.
+After setting up the process, press start and the calculation begins. The length of the calculation depends on the geometry/time discretization and on the temperature conditions, naturally. The default process should only take a moment to finish.
 
-When post-processing, you can set the ellapsed time of the process and the heat distribution at the specified time is visualized. A heat map is also generated, only the viridis color map can be used.
+When post-processing, you can set the ellapsed time of the selected process and the heat distribution at the specified time is visualized then. Also a [viridis](https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html) heat map is generated which helps you to read the required temperature values.
 
 To use it you have to install Visual Studio [redistributables](https://aka.ms/vs/16/release/vc_redist.x64.exe).
 ## Compilation help
@@ -30,7 +30,7 @@ Only a few dependencies are needed to be added:
 * [GLAD](https://glad.dav1d.de/) - an OpenGL Loading Library
 * [glm](https://github.com/g-truc/glm) - a maths library for graphics
 * [Dear ImGui](https://github.com/ocornut/imgui) - an immediate mode GUI library
-* [Tiny Color Map](https://github.com/yuki-koyama/tinycolormap) - a simple header-only library used to create maps 
+* [Tiny Color Map](https://github.com/yuki-koyama/tinycolormap) - a simple header-only library used to create color maps 
 * [this shader class](https://learnopengl.com/code_viewer_gh.php?code=includes/learnopengl/shader.h) - used to handle shaders easily
 
 A fully configured Visual Studio project is included. You can add the path to your include+library directories in the CustomPaths.props property sheet or add them manually.

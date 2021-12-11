@@ -160,11 +160,11 @@
     <ClCompile Include="imgui\imgui_draw.cpp" />
     <ClCompile Include="imgui\imgui_tables.cpp" />
     <ClCompile Include="imgui\imgui_widgets.cpp" />
-    <ClCompile Include="Main.cpp" />
     <ClCompile Include="src\Calculating.cpp" />
     <ClCompile Include="src\Drawing.cpp" />
     <ClCompile Include="src\DrinkCooling.cpp" />
     <ClCompile Include="src\GeometricProperties.cpp" />
+    <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\MaterialProperties.cpp" />
     <ClCompile Include="src\ProcessProperties.cpp" />
     <ClCompile Include="src\Snapshot.cpp" />
