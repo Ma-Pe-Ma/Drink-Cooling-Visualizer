@@ -15,11 +15,11 @@ class GeometricProperties {
 	float radiusLength;
 	float axisLength;
 
-	float* radiusPoints;
-	float* radiusSectionLengths;
+	float* radiusPoints = nullptr;
+	float* radiusSectionLengths = nullptr;
 
-	float* axisPoints;
-	float* axisSectionLengths;
+	float* axisPoints = nullptr;
+	float* axisSectionLengths = nullptr;
 
 	float volume;
 

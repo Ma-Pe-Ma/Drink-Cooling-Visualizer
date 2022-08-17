@@ -154,7 +154,7 @@ int main() {
 
 		ImGui::SameLine();
 		if (ImGui::Button("+")) {
-			drinkCoolings.push_back(std::unique_ptr<DrinkCooling>(new DrinkCooling()));
+			drinkCoolings.push_back(std::make_shared<DrinkCooling>());
 		}
 		
 		ImGui::NewLine();		

@@ -13,15 +13,14 @@ class Drawing {
 private:
 	GeometricProperties* geometricProperties;
 
-	unsigned int* triangleIndices;
-	unsigned int* lineIndices;
+	unsigned int* triangleIndices = nullptr;
+	unsigned int* lineIndices = nullptr;
 
-	unsigned int* topFaceTriangleIndices;
-	unsigned int* topFaceLineIndices;
+	unsigned int* topFaceTriangleIndices = nullptr;
+	unsigned int* topFaceLineIndices = nullptr;
 
-	unsigned int* sideTriangleIndices;
-	unsigned int* sideLineIndices;
-
+	unsigned int* sideTriangleIndices = nullptr;
+	unsigned int* sideLineIndices = nullptr;;
 
 	static Shader* shader;
 	static Shader* mapShader;
