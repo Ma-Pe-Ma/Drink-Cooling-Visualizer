@@ -1,3 +1,12 @@
 [submodule "imgui"]
-	path = imgui
+	path = src/submodules/imgui
 	url = https://github.com/ocornut/imgui.git
+[submodule "src/submodules/glfw"]
+	path = src/submodules/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "src/submodules/tinycolormap"]
+	path = src/submodules/tinycolormap
+	url = https://github.com/yuki-koyama/tinycolormap.git
+[submodule "src/submodules/glm"]
+	path = src/submodules/glm
+	url = https://github.com/g-truc/glm.git

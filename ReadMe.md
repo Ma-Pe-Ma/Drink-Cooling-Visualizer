@@ -12,7 +12,7 @@ The physics of the calculations are explained [here](https://studylib.net/doc/11
 
 ## Video demonstration
 
-[![video demonstration](https://img.youtube.com/vi/zgknypV9Pyw/0.jpg)](https://www.youtube.com/watch?v=zgknypV9Pyw)
+[![video demonstration](https://img.youtube.com/vi/BLWBwTyDCcw/0.jpg)](https://www.youtube.com/watch?v=BLWBwTyDCcw)
 
 ## Manual
 
@@ -42,18 +42,25 @@ When post-processing, you can set the elapsed time of the selected process and t
 
 ### How to run it
 
-You can download application at the release section. To use it you have to install Visual Studio [redistributables](https://aka.ms/vs/16/release/vc_redist.x64.exe) first.
+You can download the application from the release section. To use it you have to install Visual Studio [redistributables](https://aka.ms/vs/16/release/vc_redist.x64.exe) first.
 
 ## Compilation help
-Only a few dependencies are needed to be added:
+
+Clone the project with its submodules:
+
+	git clone --recurse-submodules -j8 https://github.com/Ma-Pe-Ma/Drink-Cooling-Visualizer.git
+
+A CMake project is added to the repository which should configure and then build without problems.
+
+The app has the following dependencies which don't need additional configuring:
 * [GLFW](https://www.glfw.org/) - utility used to create OpenGL contexts, and windows
-* [GLAD](https://glad.dav1d.de/) - an OpenGL Loading Library
 * [glm](https://github.com/g-truc/glm) - a maths library for graphics
 * [Dear ImGui](https://github.com/ocornut/imgui) - an immediate mode GUI library
 * [Tiny Color Map](https://github.com/yuki-koyama/tinycolormap) - a simple header-only library used to create color maps 
-* [this shader class](https://learnopengl.com/code_viewer_gh.php?code=includes/learnopengl/shader.h) - used to handle shaders easily
 
-A fully configured Visual Studio project is included. You can add the path to your include+library directories in the CustomPaths.props property sheet or add them manually.
+These dependencies have to be configured before building:
+* [GLAD](https://glad.dav1d.de/) - an OpenGL Loading Library, [generate](https://glad.dav1d.de/) source and headers and place them in the [src](./) folder
+* [this shader class](https://learnopengl.com/code_viewer_gh.php?code=includes/learnopengl/shader.h) - used to handle shaders easily, place it in the [src](./) folder
 
 ## Developer notes
 This is a simple hobby project which should not be taken seriously. I do not plan to improve the functionality of this application.

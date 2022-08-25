@@ -9,8 +9,8 @@ glm::mat4 Drawing::projectionMatrix;
 unsigned int Drawing::textureColorbuffer;
 
 void Drawing::initializeClass() {
-	Drawing::shader = new Shader("Shaders/Drink.vs", "Shaders/Drink.fs");
-	Drawing::mapShader = new Shader("Shaders/Map.vs", "Shaders/Map.fs");
+	Drawing::shader = new Shader("resources/Drink.vs", "resources/Drink.fs");
+	Drawing::mapShader = new Shader("resources/Map.vs", "resources/Map.fs");
 
 	shader->use();
 	projectionMatrix = glm::perspective<float>(glm::radians(90.0f), 1280.0f / 720.0f, 0.1f,200.0f);

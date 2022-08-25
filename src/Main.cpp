@@ -7,9 +7,9 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "../imgui/imgui.h"
-#include "../imgui/backends/imgui_impl_glfw.h"
-#include "../imgui/backends/imgui_impl_opengl3.h"
+#include <imgui/imgui.h>
+#include <imgui/backends/imgui_impl_glfw.h>
+#include <imgui/backends/imgui_impl_opengl3.h>
 
 #include "DrinkCooling.h"
 #include "Drawing.h"
@@ -43,7 +43,7 @@ int main() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		
-	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, u8"Drink Cooling Visualizer - Margitai Péter", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, u8"Drink Cooling Visualizer - Margitai Péter Máté", NULL, NULL);
 	//glfwSetWindowPosCallback(window, window_pos_callback);
 	glfwSetWindowPos(window, 100, 100);
 
@@ -83,10 +83,10 @@ int main() {
 	builder.AddRanges(io.Fonts->GetGlyphRangesDefault());
 	builder.BuildRanges(&ranges);
 
-	io.Fonts->AddFontFromFileTTF("imgui/misc/fonts/Roboto-Medium.ttf", 13, nullptr, ranges.Data);
+	io.Fonts->AddFontFromFileTTF("./resources/Roboto-Medium.ttf", 13, nullptr, ranges.Data);
 
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
-	ImGui_ImplOpenGL3_Init("#version 450 core");
+	ImGui_ImplOpenGL3_Init("#version 460 core");
 
 	ImGui::StyleColorsDark();
 
@@ -133,13 +133,12 @@ int main() {
 		windowSize = ImVec2(400, SCR_HEIGHT);
 		ImGui::SetNextWindowSize(windowSize);
 
-		ImGui::Begin("Drink Cooling", nullptr, ImGuiWindowFlags_NoResize);		
+		ImGui::Begin("Drink Cooling Visualizer", nullptr, ImGuiWindowFlags_NoResize);		
 		
 		static int currentListElement = 0;
 
 		ImVec2 listSize(0, 60);
 		if (ImGui::BeginListBox(u8"Processes", listSize)) {
-
 			for (auto it = drinkCoolings.begin(); it != drinkCoolings.end(); ++it) {
 				int index = std::distance(drinkCoolings.begin(), it);
 
@@ -160,7 +159,6 @@ int main() {
 		ImGui::NewLine();		
 
 		if (selectedShared.get() != nullptr) {
-
 			ImGui::PushItemWidth(100);
 
 			int currentState = selectedShared->getCurrentState();

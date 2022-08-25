@@ -1,7 +1,7 @@
 #ifndef DRAWING_H
 #define DRAWING_H
 
-#include <SHADER/shader.h>
+#include <Shader.h>
 #include <glm/glm.hpp>
 #include "GeometricProperties.h"
 
