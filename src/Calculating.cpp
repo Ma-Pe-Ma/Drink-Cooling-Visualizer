@@ -10,7 +10,7 @@ void Calculating::initialize(int* endType, GeometricProperties* geometricPropert
 
 	this->snapshots = snapshots;
 
-	std::cout << "Calculating constructed!" << std::endl;
+	//std::cout << "Calculating constructed!" << std::endl;
 }
 
 void Calculating::update() {
@@ -41,7 +41,7 @@ void Calculating::update() {
 	}
 
 	snapshots->push_back(std::unique_ptr<Snapshot>(new Snapshot(previousHeatMap, *processProperties->getInitialTemperaturePointer(), *processProperties->getInitialTemperaturePointer(), *processProperties->getEnvironmentTemperaturePointer(), 0, geometricProperties)));
-	std::cout << "Calculating updated!" << std::endl;
+	//std::cout << "Calculating updated!" << std::endl;
 }
 
 bool Calculating::checkFinished() {
@@ -72,35 +72,35 @@ void Calculating::destroy() {
 		delete[] currentHeatMap;
 	}
 
-	std::cout << "Calculating destroyed!" << std::endl;
+	//std::cout << "Calculating destroyed!" << std::endl;
 }
 
 void Calculating::calculate() {
 	finishedFuture = finished.get_future();
 
-	std::cout << "Material properties: " << std::endl;	
-	std::cout << "\tHeat capacity: " << *materialProperties->getHeatcapacityPointer() << std::endl;
-	std::cout << "\tDensity: " << *materialProperties->getDensityPointer()<< std::endl;
-	std::cout << "\tHeat transfer " << *materialProperties->getHeatTransferCoefficientPointer() << std::endl;
-	std::cout << "\tHeat Conductivity: " << *materialProperties->getHeatConductivityPointer() << std::endl;
+	// std::cout << "Material properties: " << std::endl;	
+	// std::cout << "\tHeat capacity: " << *materialProperties->getHeatcapacityPointer() << std::endl;
+	// std::cout << "\tDensity: " << *materialProperties->getDensityPointer()<< std::endl;
+	// std::cout << "\tHeat transfer " << *materialProperties->getHeatTransferCoefficientPointer() << std::endl;
+	// std::cout << "\tHeat Conductivity: " << *materialProperties->getHeatConductivityPointer() << std::endl;
 
-	std::cout << "Process properties: " << std::endl;
-	std::cout << "\tEnd Type: " << endType << std::endl;
-	std::cout << "\tTimeStep: " << *processProperties->getTimeStepPointer()<< std::endl;
-	std::cout << "\tSnapshot delta-time: " << *processProperties->getSnapshotIntervalPointer() << std::endl;
+	// std::cout << "Process properties: " << std::endl;
+	// std::cout << "\tEnd Type: " << endType << std::endl;
+	// std::cout << "\tTimeStep: " << *processProperties->getTimeStepPointer()<< std::endl;
+	// std::cout << "\tSnapshot delta-time: " << *processProperties->getSnapshotIntervalPointer() << std::endl;
 
-	std::cout << "\tInitial Temperature: " << *processProperties->getInitialTemperaturePointer() << std::endl;
-	std::cout << "\tEnvironment Temperature: " << *processProperties->getEnvironmentTemperaturePointer() << std::endl;
+	// std::cout << "\tInitial Temperature: " << *processProperties->getInitialTemperaturePointer() << std::endl;
+	// std::cout << "\tEnvironment Temperature: " << *processProperties->getEnvironmentTemperaturePointer() << std::endl;
 
 	runProcess.store(true);
 
 	if (*endType == 0) {
-		std::cout << "\tTarge temperature: " << *processProperties->getTargetTemperaturePointer() << std::endl;
+		//std::cout << "\tTarget temperature: " << *processProperties->getTargetTemperaturePointer() << std::endl;
 		thread = std::thread {&Calculating::calculateTargetTemperature, this};
 		//thread.detach();
 	}
 	else {
-		std::cout << "\tTimeSpan: " << *processProperties->getTargetTimeSpanPointer() << std::endl;
+		//std::cout << "\tTimeSpan: " << *processProperties->getTargetTimeSpanPointer() << std::endl;
 		thread = std::thread{&Calculating::calculateTimeSpan, this};
 		//thread.detach();
 	}
@@ -123,7 +123,7 @@ void Calculating::calculateTargetTemperature() {
 
 		if (currentTime - lastSnapshotTime >= snapshotDeltaTime) {
 			float averageTemp = getAverageTemperature(previousHeatMap);
-			std::cout << "averageTemp: " << averageTemp << ", target: " << targetTemperature << std::endl;
+			//std::cout << "averageTemp: " << averageTemp << ", target: " << targetTemperature << std::endl;
 
 			snapshots->push_back(std::unique_ptr<Snapshot>(new Snapshot(previousHeatMap, averageTemp, *processProperties->getInitialTemperaturePointer(), *processProperties->getEnvironmentTemperaturePointer(), ellapsedSecs, geometricProperties)));
 
@@ -136,13 +136,13 @@ void Calculating::calculateTargetTemperature() {
 		}
 	}
 
-	std::cout << "snapshot count: " << snapshots->size();
+	//std::cout << "snapshot count: " << snapshots->size();
 
 	finished.set_value(true);
 }
 
 void Calculating::calculateTimeSpan() {
-	std::cout << "Calculating time span!" << std::endl;
+	//std::cout << "Calculating time span!" << std::endl;
 
 	float timeStep = *processProperties->getTimeStepPointer();
 	float targetTimeSpan = *processProperties->getTargetTimeSpanPointer() * 60;
@@ -152,8 +152,8 @@ void Calculating::calculateTimeSpan() {
 
 	float lastSnapshotTime = 0;
 
-	std::cout << "timeticks: " << timeticks << std::endl;
-
+	//std::cout << "Time ticks: " << timeticks << std::endl;
+	
 	for (int t = 1; t < (timeticks + 1) && runProcess.load(); t++) {
 		float currentTime = t * timeStep;
 
@@ -162,7 +162,7 @@ void Calculating::calculateTimeSpan() {
 		calculateTimeStep(false);
 
 		if (currentTime - lastSnapshotTime >= snapshotDeltaTime) {
-			std::cout << "currentTime: " << currentTime << ", ellapsedSecs: " << ellapsedSecs << std::endl;
+			//std::cout << "currentTime: " << currentTime << ", ellapsedSecs: " << ellapsedSecs << std::endl;
 			float averageTemp = getAverageTemperature(previousHeatMap);
 
 			snapshots->push_back(std::unique_ptr<Snapshot>(new Snapshot(previousHeatMap, averageTemp, *processProperties->getInitialTemperaturePointer(), *processProperties->getEnvironmentTemperaturePointer(), ellapsedSecs, geometricProperties)));
@@ -176,7 +176,7 @@ void Calculating::calculateTimeSpan() {
 		}
 	}
 
-	std::cout << "snapshot count: " << snapshots->size();
+	//std::cout << "Snapshot count: " << snapshots->size();
 
 	finished.set_value(true);
 }

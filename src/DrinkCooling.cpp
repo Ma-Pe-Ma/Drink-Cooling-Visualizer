@@ -35,7 +35,7 @@ void DrinkCooling::updateGeometry() {
 	current.lock()->generateBuffers();
 	drawing.update();
 	drawing.determineCameraMatrix();
-	std::cout << "Geometry properties updated!" << std::endl;
+	//std::cout << "Geometry properties updated!" << std::endl;
 }
 
 void DrinkCooling::updateProcessProperties() {
@@ -44,12 +44,12 @@ void DrinkCooling::updateProcessProperties() {
 	calculating.update();
 	current = snapshots[0];
 	current.lock()->generateBuffers();
-	std::cout << "Process properties updated!" << std::endl;
+	//std::cout << "Process properties updated!" << std::endl;
 }
 
 void DrinkCooling::updateMaterialProperties() {
 	materialProperties.update();
-	std::cout << "Material properties updated!" << std::endl;
+	//std::cout << "Material properties updated!" << std::endl;
 }
 
 void DrinkCooling::visualize() {

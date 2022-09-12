@@ -9,8 +9,8 @@ glm::mat4 Drawing::projectionMatrix;
 unsigned int Drawing::textureColorbuffer;
 
 void Drawing::initializeClass() {
-	Drawing::shader = new Shader("resources/Drink.vs", "resources/Drink.fs");
-	Drawing::mapShader = new Shader("resources/Map.vs", "resources/Map.fs");
+	Drawing::shader = new Shader("./resources/Drink.vs", "./resources/Drink.fs");
+	Drawing::mapShader = new Shader("./resources/Map.vs", "./resources/Map.fs");
 
 	shader->use();
 	projectionMatrix = glm::perspective<float>(glm::radians(90.0f), 1280.0f / 720.0f, 0.1f,200.0f);
@@ -219,7 +219,7 @@ void Drawing::update() {
 	otherSectionModelViewMatrix = glm::mat4(1.0f);
 	otherSectionModelViewMatrix = glm::rotate(otherSectionModelViewMatrix, glm::radians(float(sectionAngle)), glm::vec3(0, 1, 0));
 
-	std::cout << "Drawing updated!";
+	//std::cout << "Drawing updated!";
 
 	unsigned int factor = geometricProperties->getFactor();
 	float radiusLength = geometricProperties->getRadiusLength();
@@ -335,10 +335,11 @@ void Drawing::update() {
 void Drawing::visualize(std::shared_ptr<Snapshot> snapshot) {
 	shader->use();
 	
+#ifndef __EMSCRIPTEN__
 	glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
-
-	glLineWidth(2);
 	glPointSize(5);
+#endif
+	glLineWidth(2);	
 
 	glBindVertexArray(vao);
 

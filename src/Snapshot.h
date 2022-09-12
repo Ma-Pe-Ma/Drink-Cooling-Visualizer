@@ -2,7 +2,14 @@
 #define SNAPSHOT_H
 
 #include <memory>
+
+#if defined __EMSCRIPTEN__
+#include <GLES3/gl3.h>
+#include "emscripten.h"
+#else 
 #include <glad/glad.h>
+#endif
+
 #include <tinycolormap.hpp>
 #include <iostream>
 

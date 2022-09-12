@@ -2,13 +2,17 @@
 
 ![status](https://badgen.net/badge/status/finished/green) ![license](https://badgen.net/github/license/Ma-Pe-Ma/Drink-Cooling-Visualizer)
 
-![Windows](https://badgen.net/badge/Windows/working/green) 
+![browser](https://badgen.net/badge/browser/working/green) ![desktop](https://badgen.net/badge/desktop/working/green) 
 
 A simple visualizer and numerical solver for determining the temperature distribution inside a can of drink during a cooling process.
 
-The application was written in C++ for Windows. It uses a simple physical model, only the conduction inside the drink ([Fourier's law](https://en.wikipedia.org/wiki/Thermal_conduction#Fourier's_law)) and the heat transfer ([Newton's law of coooling](https://en.wikipedia.org/wiki/Newton%27s_law_of_cooling)) at the boundary is modelled, the can is neglected, and the environment temperature is constant.
+The application was written in C++ for browsers and desktop (Windows/Linux). It uses a simple physical model, only the conduction inside the drink ([Fourier's law](https://en.wikipedia.org/wiki/Thermal_conduction#Fourier's_law)) and the heat transfer ([Newton's law of coooling](https://en.wikipedia.org/wiki/Newton%27s_law_of_cooling)) at the boundary is modelled, the can is neglected, and the environment temperature is constant.
 
 The physics of the calculations are explained [here](https://studylib.net/doc/11409665/project-no.-2.-cooling-of-beer-1-introduction-may-8--2003) but I modified much of it for my own likings.
+
+## Browser port
+
+**The app can be used in browser [here](https://mapema.hu/en/hobby/drink-cooling-visualizer/application/)!**
 
 ## Video demonstration
 
@@ -42,7 +46,7 @@ When post-processing, you can set the elapsed time of the selected process and t
 
 ### How to run it
 
-You can download the application from the release section. To use it you have to install Visual Studio [redistributables](https://aka.ms/vs/16/release/vc_redist.x64.exe) first.
+Try the [browser port](#browser-port) or you can download the application from the release section. On Windows you have to install Visual Studio [redistributables](https://aka.ms/vs/16/release/vc_redist.x64.exe) first.
 
 ## Compilation help
 
@@ -52,15 +56,14 @@ Clone the project with its submodules:
 
 A CMake project is added to the repository which should configure and then build without problems.
 
-The app has the following dependencies which don't need additional configuring:
+The app requires the following dependecies (which do not need further configuring):
 * [GLFW](https://www.glfw.org/) - utility used to create OpenGL contexts, and windows
 * [glm](https://github.com/g-truc/glm) - a maths library for graphics
 * [Dear ImGui](https://github.com/ocornut/imgui) - an immediate mode GUI library
 * [Tiny Color Map](https://github.com/yuki-koyama/tinycolormap) - a simple header-only library used to create color maps 
+* [GLAD](https://glad.dav1d.de/) - an OpenGL Loading Library, which was [generated](https://glad.dav1d.de/) here
 
-These dependencies have to be configured before building:
-* [GLAD](https://glad.dav1d.de/) - an OpenGL Loading Library, [generate](https://glad.dav1d.de/) source and headers and place them in the [src](./) folder
-* [this shader class](https://learnopengl.com/code_viewer_gh.php?code=includes/learnopengl/shader.h) - used to handle shaders easily, place it in the [src](./) folder
+The app should also compile without problems to WebAssemby build with Emscripten.
 
 ## Developer notes
 This is a simple hobby project which should not be taken seriously. I do not plan to improve the functionality of this application.
