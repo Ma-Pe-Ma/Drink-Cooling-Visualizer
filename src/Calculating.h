@@ -14,8 +14,8 @@
 #include <thread>
 
 class Calculating {
-	float** previousHeatMap;
-	float** currentHeatMap;
+	float** previousHeatMap = nullptr;
+	float** currentHeatMap = nullptr;
 
 	GeometricProperties* geometricProperties;
 	ProcessProperties* processProperties;
@@ -25,27 +25,31 @@ class Calculating {
 
 	void calculateTimeSpan();
 	void calculateTargetTemperature();
-	void calculateTimeStep(bool);
+	void calculateTimeStep();
 	float getAverageTemperature(float**);
 
-	std::vector<std::shared_ptr<Snapshot>>* snapshots;
+	std::shared_ptr<std::vector<std::shared_ptr<Snapshot>>> snapshots;
 
 	std::promise<bool> finished;
 	std::future<bool> finishedFuture;
 	std::thread thread;
 	std::atomic<bool> runProcess;
 
+	int previousRadiusNr = 0;
 public:
 	//Calculating(int*, GeometricProperties*, ProcessProperties*, MaterialProperties*, std::vector<std::shared_ptr<Snapshot>>*);
 	Calculating() {}
 	Calculating(const Calculating&) = delete;
-	Calculating& operator= (const Calculating&) = delete;
-	void destroy();
-	void calculate();
-	void update();
-	void initialize(int* endType, GeometricProperties* geometricProperties, ProcessProperties* processProperties, MaterialProperties* materialProperties, std::vector<std::shared_ptr<Snapshot>>* snapshots);
 	~Calculating();
 
+	Calculating& operator= (const Calculating&) = delete;
+
+	void initialize(int* endType, GeometricProperties* geometricProperties, ProcessProperties* processProperties, MaterialProperties* materialProperties, std::shared_ptr<std::vector<std::shared_ptr<Snapshot>>> snapshots);
+	
+	void update();
+	void destroy();	
+
+	void calculate();
 	bool checkFinished();
 	void stop();
 };

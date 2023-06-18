@@ -16,6 +16,9 @@ add_executable(DrinkCoolingVisualizer
 	"src/GeometricProperties.cpp"
 	"src/ProcessProperties.cpp"
 	"src/MaterialProperties.cpp"
+	"src/MainLogic.cpp"
+	"src/Windowing.cpp"
+	"src/Drawer.cpp"
 	
 	"src/submodules/glad.c"
 	"src/submodules/imgui/backends/imgui_impl_opengl3.cpp"
@@ -24,6 +27,8 @@ add_executable(DrinkCoolingVisualizer
 	"src/submodules/imgui/imgui_draw.cpp"
 	"src/submodules/imgui/imgui_tables.cpp"
 	"src/submodules/imgui/imgui_widgets.cpp"
+	"src/submodules/implot/implot.cpp"
+	"src/submodules/implot/implot_items.cpp"
 )
 
 # Add include search paths for the application
@@ -34,6 +39,7 @@ target_include_directories(DrinkCoolingVisualizer PRIVATE
 	"${CMAKE_SOURCE_DIR}/src/submodules/glm"
 	"${CMAKE_SOURCE_DIR}/src/submodules/glfw/include"
 	"${CMAKE_SOURCE_DIR}/src/submodules/imgui"
+	"${CMAKE_SOURCE_DIR}/src/submodules/implot"
 )
 
 if(EMSCRIPTEN)

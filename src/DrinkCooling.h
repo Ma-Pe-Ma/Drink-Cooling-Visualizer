@@ -39,11 +39,9 @@
 
 class DrinkCooling {
 private:
-	//id properties
-	static unsigned int idCounter;
 	std::string name;
 
-	//state 0 - uninitialized, 1 - calculating, 2 - postprocess
+	//enum: state 0 - uninitialized, 1 - calculating, 2 - postprocess
 	int state = 0;
 
 	//enum for end type (int used because of imgui) 0 - targettemperature, 1 - timespan
@@ -56,21 +54,31 @@ private:
 	//Calculating calculating = Calculating(&endType, &geometricProperties, &processProperties, &materialProperties, &snapshots);	
 	Calculating calculating;
 
-	Drawing drawing;
+	std::shared_ptr<Drawing> drawing;
 
 	//result containers
-	std::vector<std::shared_ptr<Snapshot>> snapshots;
+	std::shared_ptr<std::vector<std::shared_ptr<Snapshot>>> snapshots;
 	std::weak_ptr<Snapshot> current;
-
-	unsigned int mapTextureId;
-	std::chrono::system_clock::time_point processStartTime;
-	float processLength = 0;
-
 	int currentSnapshotId = 0;
 
+	std::chrono::system_clock::time_point processStartTime;
+	float processLength = 0;	
+
+	float* snapshotTimes = nullptr;
+	float* snapshotAverageTemperatures = nullptr;
+
 public:
-	DrinkCooling();
+	DrinkCooling(int);
 	~DrinkCooling();
+
+	void updateGeometry();
+	void updateMaterialProperties();
+	void updateProcessProperties();
+
+	void launchProcess();
+	bool checkProcessFinish();
+
+	std::string getCurrentStateString(int state);
 
 	void setEndType(int endtype) { this->endType = endtype; }
 
@@ -84,29 +92,12 @@ public:
 
 	int getCurrentState() {
 		return state;
-	}
-
-	std::string getCurrentStateString(int state) {
-		switch (state) {
-		case 0:
-			return "configuration";
-		case 1:
-			return "calculating...";
-		case 2:
-			return "post-process";
-		}
-
-		return "unknown";
-	}
+	}	
 
 	int* getEndTypePointer() {
 		return &endType;
 	}
-
-	void updateGeometry();
-	void updateMaterialProperties();
-	void updateProcessProperties();
-
+	
 	GeometricProperties* getGeometricProperties() {
 		return &geometricProperties;
 	}
@@ -119,20 +110,21 @@ public:
 		return &processProperties;
 	}
 
-	Drawing* getDrawing() {
-		return &drawing;
+	std::shared_ptr<Drawing> getDrawing() {
+		return drawing;
 	}
 
-	void visualize();
-	void launchProcess();
-	void checkProcesFinish();
-
 	int getSnapshotSize() {
-		return snapshots.size();
+		return snapshots->size();
 	}
 
 	void setCurrentSnapshot(int currentID) {
-		current = snapshots[currentID];
+		current = (*snapshots)[currentID];
+	}
+
+	std::weak_ptr<Snapshot> getCurrentSnapshot()
+	{
+		return this->current;
 	}
 
 	float getCurrentSnapshotAverateTemperature() {
@@ -141,10 +133,6 @@ public:
 
 	int getCurrentSnapshotTime() {
 		return current.lock()->getTime();
-	}
-
-	unsigned int getMapTexture() {
-		return drawing.getTexure();
 	}
 
 	void stop() {
@@ -157,6 +145,16 @@ public:
 
 	int* getCurrentSnapshotID() {
 		return &currentSnapshotId;
+	}
+
+	float* getSnapshotTimes()
+	{
+		return snapshotTimes;
+	}
+
+	float* getSnapshotAverageTemperatures()
+	{
+		return snapshotAverageTemperatures;
 	}
 };
 

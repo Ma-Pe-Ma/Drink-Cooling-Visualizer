@@ -1,6 +1,6 @@
 #include "Snapshot.h"
 
-Snapshot::Snapshot(float**& heatMap, float averageTemperature, float initTemp, float environmentTemp, int time ,GeometricProperties* geometricProperties) {
+Snapshot::Snapshot(float**& heatMap, float averageTemperature, float initTemp, float environmentTemp, int time, GeometricProperties* geometricProperties) {
 	this->averageTemperature = averageTemperature;
 	this->time = time;
 
@@ -15,30 +15,25 @@ Snapshot::Snapshot(float**& heatMap, float averageTemperature, float initTemp, f
 
 	int k = 0;
 
+	//create the colored default section geometry
 	for (int j = 0; j < axisNr; j++) {
 		for (int i = 0; i < radiusNr; i++) {
 			float heatFactor = (heatMap[i][j] - environmentTemp) / (initTemp - environmentTemp);
-			
-			float randColor = 0.0f + float(rand()% 11) * 0.1f;
 			const tinycolormap::Color color = tinycolormap::GetColor(heatFactor, tinycolormap::ColormapType::Viridis);
-			//const tinycolormap::Color color = tinycolormap::GetColor(randColor, tinycolormap::ColormapType::Viridis);
 
 			vertexArray[k * usedVertexNr + 0] = radiusPoints[i];
 			vertexArray[k * usedVertexNr + 1] = axisPoints[j];
 			vertexArray[k * usedVertexNr + 2] = 0;
 
-			vertexArray[k * usedVertexNr + 3] = (float)color.r();
-			vertexArray[k * usedVertexNr + 4] = (float)color.g();
-			vertexArray[k * usedVertexNr + 5] = (float)color.b();
+			vertexArray[k * usedVertexNr + 3] = (float) color.r();
+			vertexArray[k * usedVertexNr + 4] = (float) color.g();
+			vertexArray[k * usedVertexNr + 5] = (float) color.b();
 
 			k++;
 		}
 	}
-	
-	//glGenBuffers(1, &vbo);
-	//glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertexSize, this->vertexArray, GL_STATIC_DRAW);
 
+	//Create the top and bottom side of the section
 	float radiusLength = geometricProperties->getRadiusLength();
 	float factor = geometricProperties->getFactor();
 
@@ -78,11 +73,7 @@ Snapshot::Snapshot(float**& heatMap, float averageTemperature, float initTemp, f
 		}		
 	}
 
-	//glGenBuffers(1, &topVbo);
-	//glBindBuffer(GL_ARRAY_BUFFER, topVbo);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(float) * topVertexSize, this->topVertexArray, GL_STATIC_DRAW);
-
-
+	//Create the side of the section
 	float axisLength = geometricProperties->getAxisLength();
 	this->sideVertexSize = usedVertexNr * topPointNr * axisNr;
 	int axisSectionNr = geometricProperties->getAxisSectiontNr();
@@ -104,25 +95,49 @@ Snapshot::Snapshot(float**& heatMap, float averageTemperature, float initTemp, f
 			k++;
 		}
 	}
+}
 
-	//glGenBuffers(1, &sideVbo);
-	//glBindBuffer(GL_ARRAY_BUFFER, sideVbo);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(float) * sideVertexSize, this->sideVertexArray, GL_STATIC_DRAW);
+//Needed because snapshots are created on different thread and on it opengl context does not work
+//called on main thread
+void Snapshot::generateBuffers() {
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertexSize, this->vertexArray, GL_STATIC_DRAW);
+
+	delete[] vertexArray;
+	vertexArray = nullptr;
+
+	glGenBuffers(1, &topVbo);
+	glBindBuffer(GL_ARRAY_BUFFER, topVbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * topVertexSize, this->topVertexArray, GL_STATIC_DRAW);
+
+	delete[] topVertexArray;
+	topVertexArray = nullptr;
+
+	glGenBuffers(1, &sideVbo);
+	glBindBuffer(GL_ARRAY_BUFFER, sideVbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * sideVertexSize, this->sideVertexArray, GL_STATIC_DRAW);
+
+	delete[] sideVertexArray;
+	sideVertexArray = nullptr;
 }
 
 Snapshot::~Snapshot() {
 	glDeleteBuffers(1, &vbo);
 	if (vertexArray != nullptr) {
 		delete[] vertexArray;
-	}	
+		vertexArray = nullptr;
+	}
 
 	glDeleteBuffers(1, &topVbo);
 	if (topVertexArray != nullptr) {
 		delete[] topVertexArray;
-	}
+		topVertexArray = nullptr;
+	}	
 
 	glDeleteBuffers(1, &sideVbo);
 	if (sideVertexArray != nullptr) {
 		delete[] sideVertexArray;
+		sideVertexArray = nullptr;
 	}	
 }

@@ -44,6 +44,8 @@ After setting up the process, press start and the calculation begins. The length
 
 When post-processing, you can set the elapsed time of the selected process and the heat distribution at the specified time is visualized then. Also a [viridis](https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html) heat map is generated which helps you to read the required temperature values.
 
+The temperature-time distribution of the process is also shown to the user as a plot.
+
 ### How to run it
 
 Try the [browser port](#browser-port) or you can download the application from the release section. On Windows you have to install Visual Studio [redistributables](https://aka.ms/vs/16/release/vc_redist.x64.exe) first.
@@ -60,8 +62,9 @@ The app requires the following dependecies (which do not need further configurin
 * [GLFW](https://www.glfw.org/) - utility used to create OpenGL contexts, and windows
 * [glm](https://github.com/g-truc/glm) - a maths library for graphics
 * [Dear ImGui](https://github.com/ocornut/imgui) - an immediate mode GUI library
+* [ImPlot](https://github.com/epezent/implot) - an immediate mode plotting library for Dear ImGui
 * [Tiny Color Map](https://github.com/yuki-koyama/tinycolormap) - a simple header-only library used to create color maps 
-* [GLAD](https://glad.dav1d.de/) - an OpenGL Loading Library, which was [generated](https://glad.dav1d.de/) here
+* [GLAD](https://glad.dav1d.de/) - an OpenGL Loading Library
 
 The app should also compile without problems to WebAssemby build with Emscripten.
 

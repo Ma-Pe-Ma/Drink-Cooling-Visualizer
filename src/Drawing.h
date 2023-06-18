@@ -1,7 +1,6 @@
 #ifndef DRAWING_H
 #define DRAWING_H
 
-#include <Shader.h>
 #include <glm/glm.hpp>
 #include "GeometricProperties.h"
 
@@ -21,27 +20,9 @@ private:
 
 	unsigned int* sideTriangleIndices = nullptr;
 	unsigned int* sideLineIndices = nullptr;;
-
-	static Shader* shader;
-	static Shader* mapShader;
-	static Shader* textShader;
-
-	glm::mat4 cameraMatrix;
-	static glm::mat4 projectionMatrix;
 	
-	glm::mat4 defaultModelViewMatrix = glm::mat4(1.0f);
-	glm::mat4 otherSectionModelViewMatrix = glm::mat4(1.0f);
-
-	glm::mat4 topFaceModelViewMatrix;
-	glm::mat4 bottomFaceModelViewMatrix;
-
-	//camera properties
-	float cameraDistance = DEFAULT_CAMERA_DISTANCE;
-	float cameraAngle = 0;
-	float cameraHeight = 0;
-
 	//Drawing properties
-	bool verticeSwitch = false;
+	bool vertexSwitch = false;
 	bool lineSwitch = false;
 	bool surfaceSwitch = true;
 
@@ -56,25 +37,32 @@ private:
 	unsigned int sideTriangleEbo;
 	unsigned int sideLineEbo;
 
-	unsigned int verticeNr;
+	unsigned int vertexNr;
 	unsigned int lineNr;
 	unsigned int triangleNr;
 
-	unsigned int topVerticeNr;
+	unsigned int topVertexNr;
 	unsigned int topLineNr;
 	unsigned int topTriangleNr;
 
-	unsigned int sideVerticeNr;
+	unsigned int sideVertexNr;
 	unsigned int sideLineNr;
 	unsigned int sideTriangleNr;
 
-	static unsigned int textureColorbuffer;
+	//camera properties
+	float cameraDistance = DEFAULT_CAMERA_DISTANCE;
+	float cameraAngle = 0;
+	float cameraHeight = 0;
+
+	glm::mat4 cameraMatrix;
+
+	glm::mat4 defaultModelViewMatrix = glm::mat4(1.0f);
+	glm::mat4 otherSectionModelViewMatrix = glm::mat4(1.0f);
+
+	glm::mat4 topFaceModelViewMatrix;
+	glm::mat4 bottomFaceModelViewMatrix;
 
 public:
-	static void initializeClass();
-	static void updateProjectionMatrix(int, int);
-
-	Drawing();
 	~Drawing();
 	void setGeometricProperties(GeometricProperties* geometricProperties);
 	void setCameraDistance(float cameraDistance);
@@ -82,6 +70,8 @@ public:
 	void setCameraHeight(float cameraHeight);
 	void determineCameraMatrix();
 
+	void update();
+	void destroy();
 
 	float* getCameraDistancePointer() {
 		return &cameraDistance;
@@ -95,32 +85,19 @@ public:
 		return &cameraHeight;
 	}
 
-	bool* getVerticesSwitchPointer() {
-		return &verticeSwitch;
+	bool* getVertexSwitchPointer() {
+		return &vertexSwitch;
 	}
 
 	bool* getLineSwitchPointer() {
 		return &lineSwitch;
 	}
 
-	bool* getSurfaceSwitch() {
+	bool* getSurfaceSwitchPointer() {
 		return &surfaceSwitch;
 	}
 
-	void update();
-	void destroy();
-
-	void visualize(std::shared_ptr<Snapshot>);
-
-	void drawTopOrBottomFace(std::shared_ptr<Snapshot>);
-	void drawSide(std::shared_ptr<Snapshot>);
-	void drawSection(std::shared_ptr<Snapshot>);
-
-	static void initializeMap();
-
-	static unsigned int getTexure() {
-		return textureColorbuffer;
-	}
+	friend class Drawer;
 };
 
 #endif // ! DRAWING_H

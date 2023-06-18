@@ -34,6 +34,9 @@ class GeometricProperties {
 public:
 	GeometricProperties(float, float, int, int, int);
 	~GeometricProperties();
+
+	void update();
+	void destroy();
 		
 	int getRadiusPointNr() {
 		return radiusPointNr;
@@ -111,9 +114,6 @@ public:
 	int* getSectionAngleGUI() {
 		return &sectionAngleGUI;
 	}
-
-	void destroy();
-	void update();		
 };
 
 #endif

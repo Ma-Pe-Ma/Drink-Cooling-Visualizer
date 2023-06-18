@@ -31,13 +31,17 @@ void GeometricProperties::update() {
 
 	radiusPoints = new float[radiusPointNr];
 	for (int i = 0; i < radiusPointNr; i++) {
-		radiusPoints[i] = radiusLength * sqrt(float(i) / (radiusSectionNr));
+		radiusPoints[i] = radiusLength * sqrt(float(i) / radiusSectionNr);
 	}
 
-	radiusSectionLengths = new float[radiusSectionNr];
+	radiusSectionLengths = new float[radiusSectionNr + 1];
 	for (int i = 0; i < radiusSectionNr; i++) {
 		radiusSectionLengths[i] = radiusPoints[i + 1] - radiusPoints[i];
 	}
+
+	//special section for heat transfer at edge
+	//radiusSectionLengths[radiusSectionNr] = 0.5f * (sqrt(1 + 1.0f / radiusSectionNr) - sqrt(1 - 1.0f / radiusSectionNr));
+	radiusSectionLengths[radiusSectionNr] = 1.0f;
 
 	axisPoints = new float[axisPointNr];
 	float axisDistance = axisLength / axisSectionNr;
@@ -54,21 +58,25 @@ void GeometricProperties::update() {
 }
 
 void GeometricProperties::destroy() {
-	if (axisPoints != nullptr) {
-		delete[] axisPoints;
-	}
-
-	if (axisSectionLengths != nullptr) {
-		delete[] axisSectionLengths;
-	}
-
 	if (radiusPoints != nullptr) {
 		delete[] radiusPoints;
+		radiusPoints = nullptr;
 	}
 
 	if (radiusSectionLengths != nullptr) {
 		delete[] radiusSectionLengths;
+		radiusSectionLengths = nullptr;
 	}
+
+	if (axisPoints != nullptr) {
+		delete[] axisPoints;
+		axisPoints = nullptr;
+	}
+
+	if (axisSectionLengths != nullptr) {
+		delete[] axisSectionLengths;
+		axisSectionLengths = nullptr;
+	}	
 }
 
 GeometricProperties::~GeometricProperties() {

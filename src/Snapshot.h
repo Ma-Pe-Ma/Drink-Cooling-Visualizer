@@ -37,10 +37,9 @@ class Snapshot {
 	int time;
 public:
 	Snapshot(float**&, float, float, float, int, GeometricProperties*);
-	
-	void draw();
-
 	~Snapshot();
+
+	void generateBuffers();
 
 	unsigned int getVBO() {
 		return vbo;
@@ -56,35 +55,6 @@ public:
 
 	float getAverageTemperature() {
 		return averageTemperature;
-	}
-
-	void generateBuffers() {
-		
-			glGenBuffers(1, &vbo);
-			glBindBuffer(GL_ARRAY_BUFFER, vbo);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertexSize, this->vertexArray, GL_STATIC_DRAW);
-
-			delete[] vertexArray;
-			vertexArray = nullptr;
-		
-
-		
-			glGenBuffers(1, &topVbo);
-			glBindBuffer(GL_ARRAY_BUFFER, topVbo);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(float) * topVertexSize, this->topVertexArray, GL_STATIC_DRAW);
-
-			delete[] topVertexArray;
-			topVertexArray = nullptr;
-		
-
-		
-			glGenBuffers(1, &sideVbo);
-			glBindBuffer(GL_ARRAY_BUFFER, sideVbo);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(float) * sideVertexSize, this->sideVertexArray, GL_STATIC_DRAW);
-
-			delete[] sideVertexArray;
-			sideVertexArray = nullptr;
-		
 	}
 
 	int getTime() {

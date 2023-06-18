@@ -10,3 +10,6 @@
 [submodule "src/submodules/glm"]
 	path = src/submodules/glm
 	url = https://github.com/g-truc/glm.git
+[submodule "src/submodules/implot"]
+	path = src/submodules/implot
+	url = https://github.com/epezent/implot.git

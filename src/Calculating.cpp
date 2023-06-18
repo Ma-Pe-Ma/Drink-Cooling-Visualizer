@@ -2,7 +2,9 @@
 #include <cmath>
 #include <iostream>
 
-void Calculating::initialize(int* endType, GeometricProperties* geometricProperties, ProcessProperties* processProperties, MaterialProperties* materialProperties, std::vector<std::shared_ptr<Snapshot>>* snapshots) {
+#include "Snapshot.h"
+
+void Calculating::initialize(int* endType, GeometricProperties* geometricProperties, ProcessProperties* processProperties, MaterialProperties* materialProperties, std::shared_ptr<std::vector<std::shared_ptr<Snapshot>>> snapshots) {
 	this->endType = endType;
 	this->geometricProperties = geometricProperties;
 	this->processProperties = processProperties;
@@ -14,13 +16,12 @@ void Calculating::initialize(int* endType, GeometricProperties* geometricPropert
 }
 
 void Calculating::update() {
-	snapshots->clear();
-
-	this->geometricProperties = geometricProperties;
-	this->processProperties = processProperties;
+	this->destroy();
 
 	int radiusPointNr = geometricProperties->getRadiusPointNr();
 	int axisPointNr = geometricProperties->getAxisPointNr();
+
+	previousRadiusNr = radiusPointNr;
 
 	previousHeatMap = new float* [radiusPointNr];
 	currentHeatMap = new float* [radiusPointNr];
@@ -30,17 +31,12 @@ void Calculating::update() {
 		currentHeatMap[i] = new float[axisPointNr];
 
 		for (int j = 0; j < axisPointNr; j++) {
-			if (i == radiusPointNr - 1 || j == axisPointNr - 1 || j == 0) {
-				previousHeatMap[i][j] = *processProperties->getEnvironmentTemperaturePointer();
-			}
-			else {
-				previousHeatMap[i][j] = *processProperties->getInitialTemperaturePointer();
-			}
-			currentHeatMap[i][j] = 0;
+			previousHeatMap[i][j] = *processProperties->getInitialTemperaturePointer();
 		}
 	}
 
-	snapshots->push_back(std::unique_ptr<Snapshot>(new Snapshot(previousHeatMap, *processProperties->getInitialTemperaturePointer(), *processProperties->getInitialTemperaturePointer(), *processProperties->getEnvironmentTemperaturePointer(), 0, geometricProperties)));
+	snapshots->push_back(std::make_shared<Snapshot>(previousHeatMap, *processProperties->getInitialTemperaturePointer(), *processProperties->getInitialTemperaturePointer(), *processProperties->getEnvironmentTemperaturePointer(), 0, geometricProperties));
+	(*(snapshots))[0]->generateBuffers();
 	//std::cout << "Calculating updated!" << std::endl;
 }
 
@@ -63,13 +59,16 @@ Calculating::~Calculating() {
 
 void Calculating::destroy() {
 	if (previousHeatMap != nullptr && currentHeatMap != nullptr) {
-		for (int i = 0; i < geometricProperties->getRadiusPointNr(); i++) {
+		for (int i = 0; i < previousRadiusNr; i++) {
 			delete[] previousHeatMap[i];
 			delete[] currentHeatMap[i];
 		}
 
 		delete[] previousHeatMap;
 		delete[] currentHeatMap;
+
+		previousHeatMap = nullptr;
+		currentHeatMap = nullptr;
 	}
 
 	//std::cout << "Calculating destroyed!" << std::endl;
@@ -100,7 +99,7 @@ void Calculating::calculate() {
 		//thread.detach();
 	}
 	else {
-		//std::cout << "\tTimeSpan: " << *processProperties->getTargetTimeSpanPointer() << std::endl;
+		//std::cout << "\tTime span: " << *processProperties->getTargetTimeSpanPointer() << std::endl;
 		thread = std::thread{&Calculating::calculateTimeSpan, this};
 		//thread.detach();
 	}
@@ -119,13 +118,13 @@ void Calculating::calculateTargetTemperature() {
 		float currentTime = currentTickNumber++ * timeStep;
 		unsigned int ellapsedSecs = round(currentTime);
 
-		calculateTimeStep(false);
+		calculateTimeStep();
 
 		if (currentTime - lastSnapshotTime >= snapshotDeltaTime) {
 			float averageTemp = getAverageTemperature(previousHeatMap);
 			//std::cout << "averageTemp: " << averageTemp << ", target: " << targetTemperature << std::endl;
 
-			snapshots->push_back(std::unique_ptr<Snapshot>(new Snapshot(previousHeatMap, averageTemp, *processProperties->getInitialTemperaturePointer(), *processProperties->getEnvironmentTemperaturePointer(), ellapsedSecs, geometricProperties)));
+			snapshots->push_back(std::make_shared<Snapshot>(previousHeatMap, averageTemp, *processProperties->getInitialTemperaturePointer(), *processProperties->getEnvironmentTemperaturePointer(), ellapsedSecs, geometricProperties));
 
 			if (averageTemp < targetTemperature) {
 				processProperties->setResultTimeSpan(ellapsedSecs);
@@ -159,13 +158,13 @@ void Calculating::calculateTimeSpan() {
 
 		unsigned int ellapsedSecs = round(currentTime);
 
-		calculateTimeStep(false);
+		calculateTimeStep();
 
 		if (currentTime - lastSnapshotTime >= snapshotDeltaTime) {
 			//std::cout << "currentTime: " << currentTime << ", ellapsedSecs: " << ellapsedSecs << std::endl;
 			float averageTemp = getAverageTemperature(previousHeatMap);
 
-			snapshots->push_back(std::unique_ptr<Snapshot>(new Snapshot(previousHeatMap, averageTemp, *processProperties->getInitialTemperaturePointer(), *processProperties->getEnvironmentTemperaturePointer(), ellapsedSecs, geometricProperties)));
+			snapshots->push_back(std::make_shared<Snapshot>(previousHeatMap, averageTemp, *processProperties->getInitialTemperaturePointer(), *processProperties->getEnvironmentTemperaturePointer(), ellapsedSecs, geometricProperties));
 
 			if (currentTime >= targetTimeSpan) {
 				processProperties->setResultTemperature(averageTemp);
@@ -188,7 +187,7 @@ void Calculating::stop() {
 	}
 }
 
-void Calculating::calculateTimeStep(bool debug) {
+void Calculating::calculateTimeStep() {
 	float transferConstant = materialProperties->getTransferConstant();
 	float conductionConstant = materialProperties->getConductionConstant();
 	float environmentTemperature = *processProperties->getEnvironmentTemperaturePointer();
@@ -206,51 +205,41 @@ void Calculating::calculateTimeStep(bool debug) {
 
 	for (int i = 0; i < radiusPointNr; i++) {
 		for (int j = 0; j < axisPointNr; j++) {
+			float radComp;
 
-			if (i == radiusPointNr - 1 || j == 0 || j == geometricProperties->getAxisPointNr() - 1) {
-				currentHeatMap[i][j] = environmentTemperature;
+			//transfer at the side of the cylinder
+			if (i == (radiusPointNr - 1)) {
+				radComp = -transferConstant * (previousHeatMap[i][j] - environmentTemperature) / radiusSectionLengths[i] * timeStep;
 			}
+			//conduction inside the material
 			else {
-				float radComp;
+				float temperatureDifferenceBydr = (previousHeatMap[i + 1][j] - previousHeatMap[i][j]) / radiusSectionLengths[i];
+				radComp = conductionConstant * temperatureDifferenceBydr / (radiusPoints[i] + radiusSectionLengths[i]) * timeStep;
+			}
 
-				//unhandled r=0 case :/
-				if (i == 0) {
-					radComp = 0;
-				}
-				//transfer at the edge of can (at the mantle)
-				else if (i == radiusPointNr - 2) {
-					radComp = -transferConstant * (previousHeatMap[i][j] - environmentTemperature) / radiusSectionLengths[i] * timeStep;
+			//calculating bottom part
+			if (j < axisPointNr / 2 + 1) {
+				float axisComp;
+
+				//transfer at the bottom of the cylinder
+				if (j == 0) {
+					axisComp = -transferConstant * (previousHeatMap[i][j] - environmentTemperature) / axisSectionLengths[0] * timeStep;
 				}
 				//conduction inside the material
 				else {
-					float temperatureDifferenceBydr = (previousHeatMap[i + 1][j] - previousHeatMap[i][j]) / radiusSectionLengths[i];
-					radComp = conductionConstant * temperatureDifferenceBydr / (radiusPoints[i] + radiusSectionLengths[i]) * timeStep;
-				}
+					axisComp = conductionConstant * (previousHeatMap[i][j - 1] - previousHeatMap[i][j]) / (axisSectionLengths[j] * axisSectionLengths[j] ) * timeStep;
 
-				float axisComp;
-
-				//calculating bottom part
-				if (j < axisPointNr / 2 + 1) {
-					// transfer at bottom of the cylinder
-					if (j == 1) {
-						axisComp = -transferConstant * (previousHeatMap[i][j] - environmentTemperature) / axisSectionLengths[0] * timeStep;
+					//middle section gets heat from both directions
+					if (j == axisPointNr / 2) {
+						axisComp *= 2;
 					}
-					// conduction inside the material
-					else {
-						axisComp = conductionConstant * (previousHeatMap[i][j - 1] - previousHeatMap[i][j]) / (axisSectionLengths[j] * axisSectionLengths[j] ) * timeStep;
-
-						//middle section gets heat from bot directions
-						if (j == axisPointNr / 2) {
-							axisComp *= 2;
-						}
-					}
-
-					currentHeatMap[i][j] = previousHeatMap[i][j] + radComp + axisComp;
 				}
-				//symmetrical top part
-				else {
-					currentHeatMap[i][j] = currentHeatMap[i][axisPointNr - 1 - j];
-				}
+
+				currentHeatMap[i][j] = previousHeatMap[i][j] + radComp + axisComp;
+			}
+			//symmetrical top part
+			else {
+				currentHeatMap[i][j] = currentHeatMap[i][axisPointNr - 1 - j];
 			}
 		}
 	}
