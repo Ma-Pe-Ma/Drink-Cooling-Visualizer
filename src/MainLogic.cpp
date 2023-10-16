@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <iomanip>
+#include <algorithm>
 
 #include "Windowing.h"
 #include "Drawer.h"
@@ -297,5 +298,36 @@ void MainLogic::update() {
 void MainLogic::terminate() {
 	for (auto it = drinkCoolings.begin(); it != drinkCoolings.end(); it++) {
 		(*it)->stop();
+	}
+}
+
+void MainLogic::receiveScrolling(double x, double y) {
+	auto selectedShared = selected.lock();
+
+	if (selectedShared.get()) {
+		std::shared_ptr<Drawing> drawing = selectedShared->getDrawing();
+
+		auto distance = *drawing->getCameraDistancePointer() - 5 * int(y);
+		distance = std::clamp(distance, 5.0f, 100.0f);
+		drawing->setCameraDistance(distance);
+	}
+}
+
+void MainLogic::receiveMousDrag(int x, int y) {
+	auto selectedShared = selected.lock();
+
+	if (selectedShared.get()) {
+		std::shared_ptr<Drawing> drawing = selectedShared->getDrawing();
+
+		if (abs(x) > abs(y)) {
+			int angle = *drawing->getCameraAnglePointer() + x;
+			angle = angle > 359 ? angle - 360 : (angle < 0 ? 360 + angle : angle);
+			drawing->setCameraAngle(angle);
+		}
+		else {
+			int cameraHeight = *drawing->getCameraHeightPointer() + y / 2;
+			cameraHeight = std::clamp(cameraHeight, -100, 100);
+			drawing->setCameraHeight(cameraHeight);
+		}
 	}
 }

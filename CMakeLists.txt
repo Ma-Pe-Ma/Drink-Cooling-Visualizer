@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 project("DrinkCoolingVisualizer")
 
-# to build emscripten version: emcmake cmake -B./out/build/wasm -G "Ninja"
+# to build emscripten version: emcmake cmake -B./out/build/wasm-release -G "Ninja" -DCMAKE_BUILD_TYPE=Release
 
 # define executable and add sources
 add_executable(DrinkCoolingVisualizer 

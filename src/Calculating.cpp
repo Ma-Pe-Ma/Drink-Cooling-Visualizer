@@ -96,12 +96,10 @@ void Calculating::calculate() {
 	if (*endType == 0) {
 		//std::cout << "\tTarget temperature: " << *processProperties->getTargetTemperaturePointer() << std::endl;
 		thread = std::thread {&Calculating::calculateTargetTemperature, this};
-		//thread.detach();
 	}
 	else {
 		//std::cout << "\tTime span: " << *processProperties->getTargetTimeSpanPointer() << std::endl;
 		thread = std::thread{&Calculating::calculateTimeSpan, this};
-		//thread.detach();
 	}
 }
 

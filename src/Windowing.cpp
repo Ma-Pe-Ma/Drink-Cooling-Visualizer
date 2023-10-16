@@ -70,6 +70,46 @@ void Windowing::initialize()
 		self->getMainLogic()->getDrawer()->updateProjectionMatrix(self->screenWidth - self->imguiWidth, self->screenHeight);
 	});
 
+	glfwSetScrollCallback(window, [](GLFWwindow* window, double x, double y) {
+		auto self = static_cast<Windowing*>(glfwGetWindowUserPointer(window));
+
+		double cX, cY;
+		glfwGetCursorPos(window, &cX, &cY);
+
+		if (cX > self->imguiWidth) {
+			self->mainLogic->receiveScrolling(x, y);
+		}		
+	});
+
+	glfwSetCursorPosCallback(window, [](GLFWwindow* window, double x, double y) {
+		auto self = static_cast<Windowing*>(glfwGetWindowUserPointer(window));
+
+		static bool previousFrame = false;
+
+		if (x < self->imguiWidth || x > self->screenWidth || glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
+		{
+			previousFrame = false;
+			return;
+		}
+
+		static int prevX = x;
+		static int prevY = y;
+
+		if (!previousFrame) {
+			prevX = x;
+			prevY = y;
+		}
+
+		int diffX = x - prevX;
+		int diffY = y - prevY;
+
+		self->mainLogic->receiveMousDrag(diffX, diffY);
+
+		prevX = x;
+		prevY = y;
+		previousFrame = true;
+	});
+
 #if !defined __EMSCRIPTEN__
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 		std::cout << "Failed to initialize GLAD" << std::endl;

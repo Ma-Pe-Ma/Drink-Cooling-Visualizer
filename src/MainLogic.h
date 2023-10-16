@@ -42,6 +42,9 @@ public:
 	{
 		this->windowing = nullptr;
 	}
+
+	void receiveScrolling(double x, double y);
+	void receiveMousDrag(int x, int y);
 };
 
 #endif
