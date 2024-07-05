@@ -135,10 +135,10 @@ void Windowing::initialize()
 	io.Fonts->AddFontFromFileTTF("./resources/Roboto-Medium.ttf", 13, nullptr, ranges.Data);
 	io.Fonts->Build();
 
-	//std::cout<<"GL VERSION: "<<glGetString(GL_VERSION)<<std::endl;
+	//std::cout << "GL VERSION: " << glGetString(GL_VERSION) << std::endl;
 	//int major, minor, rev;
 	//glfwGetVersion(&major, &minor, &rev);
-	//std::cout<<"GLFW - major: "<<major<<", minor: "<<minor<<", rev: "<<rev<<std::endl;
+	//std::cout << "GLFW - major: " << major << ", minor: " << minor << ", rev: " << rev << std::endl;
 
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 #ifdef __EMSCRIPTEN__

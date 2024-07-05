@@ -2,37 +2,33 @@
 #define GEOMETRICPROPERTIES_H
 
 #define PI 3.14159265359f
+#define TOP_SECTION_DISCRETISATION_FACTOR 2
 
-class GeometricProperties {
-	//geometry properties
+struct GeometricParameters {
 	int radiusSectionNr;
-	int radiusPointNr;
 	int axisSectionNr;
-	int axisPointNr;
-
-	float sectionAngle = 60;
-
 	float radiusLength;
 	float axisLength;
+	int sectionAngle = 60;
+};
+
+class GeometricProperties {
+	GeometricParameters geometricParameters;
+	GeometricParameters guiGeometricParameters;
+
+	int radiusPointNr;	
+	int axisPointNr;
 
 	float* radiusPoints = nullptr;
 	float* radiusSectionLengths = nullptr;
+	float* radiusFactor = nullptr;
 
 	float* axisPoints = nullptr;
 	float* axisSectionLengths = nullptr;
 
 	float volume;
-
-	float factor = 2;
-
-	int radiusSectionNrGUI;
-	int axisSectionNrGUI;
-	float radiusLengthGUI;
-	float axisLengthGUI;
-	int sectionAngleGUI;
-
 public:
-	GeometricProperties(float, float, int, int, int);
+	GeometricProperties(GeometricParameters);
 	~GeometricProperties();
 
 	void update();
@@ -44,14 +40,6 @@ public:
 
 	int getAxisPointNr() {
 		return axisPointNr;
-	}
-
-	int getRadiusSectionNr() {
-		return radiusSectionNr;
-	}
-
-	int getAxisSectiontNr() {
-		return axisSectionNr;
 	}
 
 	float* getRadiusPointsPointer() {
@@ -70,49 +58,20 @@ public:
 		return axisSectionLengths;
 	}
 
-	float getSectionAnglePointer() {
-		return sectionAngle;
+	float* getRadiusFactor() {
+		return radiusFactor;
 	}
 
 	float getVolume() {
 		return volume;
 	}
 
-	float getRadiusLength() {
-		return radiusLength;
+	GeometricParameters& getGeometricParameters() {
+		return this->geometricParameters;
 	}
 
-	float getAxisLength() {
-		return axisLength;
-	}
-
-	float getSectionAngle() {
-		return sectionAngle;
-	}
-
-	float getFactor() {
-		return factor;
-	}
-
-	//gui value holders
-	int* getRadiusNrGUI() {
-		return &radiusSectionNrGUI;
-	}
-
-	int* getAxisNrGUI() {
-		return &axisSectionNrGUI;
-	}
-
-	float* getRadiusLengthGUI() {
-		return &radiusLengthGUI;
-	}
-
-	float* getAxisLengthGUI() {
-		return &axisLengthGUI;
-	}
-
-	int* getSectionAngleGUI() {
-		return &sectionAngleGUI;
+	GeometricParameters& getGUIGeometricParameters() {
+		return this->guiGeometricParameters;
 	}
 };
 

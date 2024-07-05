@@ -1,6 +1,7 @@
 #include "Snapshot.h"
+#include "Drawer.h"
 
-Snapshot::Snapshot(float**& heatMap, float averageTemperature, float initTemp, float environmentTemp, int time, GeometricProperties* geometricProperties) {
+Snapshot::Snapshot(float**& heatMap, float averageTemperature, float initTemp, float environmentTemp, int time, GeometricProperties* geometricProperties, int colorIndex) {
 	this->averageTemperature = averageTemperature;
 	this->time = time;
 
@@ -15,11 +16,13 @@ Snapshot::Snapshot(float**& heatMap, float averageTemperature, float initTemp, f
 
 	int k = 0;
 
+	auto colorType = std::get<0>(Drawer::colors[colorIndex]);
+
 	//create the colored default section geometry
 	for (int j = 0; j < axisNr; j++) {
 		for (int i = 0; i < radiusNr; i++) {
 			float heatFactor = (heatMap[i][j] - environmentTemp) / (initTemp - environmentTemp);
-			const tinycolormap::Color color = tinycolormap::GetColor(heatFactor, tinycolormap::ColormapType::Viridis);
+			const tinycolormap::Color color = tinycolormap::GetColor(heatFactor, colorType);
 
 			vertexArray[k * usedVertexNr + 0] = radiusPoints[i];
 			vertexArray[k * usedVertexNr + 1] = axisPoints[j];
@@ -33,12 +36,13 @@ Snapshot::Snapshot(float**& heatMap, float averageTemperature, float initTemp, f
 		}
 	}
 
-	//Create the top and bottom side of the section
-	float radiusLength = geometricProperties->getRadiusLength();
-	float factor = geometricProperties->getFactor();
+	GeometricParameters& geometricParameters = geometricProperties->getGeometricParameters();
 
-	float sectionAngleRadian = PI * geometricProperties->getSectionAngle() / 180;
-	unsigned int topSectionNr = (int) radiusLength * sectionAngleRadian * factor;
+	//Create the top and bottom side of the section
+	float radiusLength = geometricParameters.radiusLength;
+
+	float sectionAngleRadian = PI * geometricParameters.sectionAngle / 180;
+	unsigned int topSectionNr = (int) radiusLength * sectionAngleRadian * TOP_SECTION_DISCRETISATION_FACTOR;
 	unsigned int topPointNr = topSectionNr + 1;
 
 	this->topVertexSize = usedVertexNr * (1 + (radiusNr - 1) * topPointNr);
@@ -74,9 +78,9 @@ Snapshot::Snapshot(float**& heatMap, float averageTemperature, float initTemp, f
 	}
 
 	//Create the side of the section
-	float axisLength = geometricProperties->getAxisLength();
+	float axisLength = geometricParameters.axisLength;
 	this->sideVertexSize = usedVertexNr * topPointNr * axisNr;
-	int axisSectionNr = geometricProperties->getAxisSectiontNr();
+	int axisSectionNr = geometricParameters.axisSectionNr;
 	sideVertexArray = new float[sideVertexSize];
 	
 	k = 0;

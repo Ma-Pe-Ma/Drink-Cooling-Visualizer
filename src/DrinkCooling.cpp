@@ -56,9 +56,6 @@ void DrinkCooling::updateMaterialProperties() {
 void DrinkCooling::launchProcess() {
 	state = 1;
 
-	*geometricProperties.getAxisNrGUI() += *geometricProperties.getAxisNrGUI() % 2;
-	updateGeometry();
-
 	processStartTime = std::chrono::system_clock::now();
 
 	calculating.calculate();

@@ -1,60 +1,65 @@
 #include "GeometricProperties.h"
 #include <math.h>
 
-GeometricProperties::GeometricProperties(float radiusLength, float axisLength, int radiusSectionNr, int axisSectionNr, int sectionAngle) {
-	this->radiusLength = radiusLength;
-	this->axisLength = axisLength;
-	this->radiusSectionNr = radiusSectionNr;
-	this->axisSectionNr = axisSectionNr;
-	this->sectionAngle = sectionAngle;
+#define MAGIC_NUMBER sqrt(PI) 
+//#define USE_EQUAL_DISCRETE_VOLUMES
 
-	this->radiusLengthGUI = radiusLength;
-	this->axisLengthGUI = axisLength;
-	this->radiusSectionNrGUI = radiusSectionNr;
-	this->axisSectionNrGUI = axisSectionNr;
-	this->sectionAngleGUI = sectionAngle;
+GeometricProperties::GeometricProperties(GeometricParameters geometricParameters) {
+	this->geometricParameters = geometricParameters;
+	this->guiGeometricParameters = geometricParameters;
 }
 
 void GeometricProperties::update() {
 	this->destroy();
 
-	this->radiusLength = radiusLengthGUI;
-	this->axisLength = axisLengthGUI;
+	this->geometricParameters = this->guiGeometricParameters;
 
-	this->radiusSectionNr = radiusSectionNrGUI;
-	this->axisSectionNr = axisSectionNrGUI;
-
-	this->sectionAngle = sectionAngleGUI;
-
-	this->radiusPointNr = radiusSectionNr + 1;
-	this->axisPointNr = axisSectionNr + 1;	
+	this->radiusPointNr = this->geometricParameters.radiusSectionNr + 1;
+	this->axisPointNr = this->geometricParameters.axisSectionNr + 1;
 
 	radiusPoints = new float[radiusPointNr];
 	for (int i = 0; i < radiusPointNr; i++) {
-		radiusPoints[i] = radiusLength * sqrt(float(i) / radiusSectionNr);
+#ifdef USE_EQUAL_DISCRETE_VOLUMES
+		radiusPoints[i] = this->geometricParameters.radiusLength * sqrt(float(i) / this->geometricParameters.radiusSectionNr);
+#else
+		radiusPoints[i] = float(i) * this->geometricParameters.radiusLength / this->geometricParameters.radiusSectionNr;
+#endif // USE_EQUAL_DISCRETE_VOLUMES
 	}
 
-	radiusSectionLengths = new float[radiusSectionNr + 1];
-	for (int i = 0; i < radiusSectionNr; i++) {
+	radiusSectionLengths = new float[this->geometricParameters.radiusSectionNr + 1];
+	for (int i = 0; i < this->geometricParameters.radiusSectionNr; i++) {
 		radiusSectionLengths[i] = radiusPoints[i + 1] - radiusPoints[i];
 	}
 
-	//special section for heat transfer at edge
-	//radiusSectionLengths[radiusSectionNr] = 0.5f * (sqrt(1 + 1.0f / radiusSectionNr) - sqrt(1 - 1.0f / radiusSectionNr));
-	radiusSectionLengths[radiusSectionNr] = 1.0f;
-
-	axisPoints = new float[axisPointNr];
-	float axisDistance = axisLength / axisSectionNr;
-	for (int i = 0; i < axisPointNr; i++) {
-		axisPoints[i] = -axisLength / 2 + i * axisDistance;
+	radiusFactor = new float[this->geometricParameters.radiusSectionNr];
+	for (int i = 0; i < this->geometricParameters.radiusSectionNr; i++) {
+		radiusFactor[i] = (2.0f / (radiusPoints[i] + radiusPoints[i + 1]) + 1.0f / radiusSectionLengths[i]) / radiusSectionLengths[i];
 	}
 
-	axisSectionLengths = new float[axisSectionNr];
-	for (int i = 0; i < axisSectionNr; i++) {
+	axisPoints = new float[axisPointNr];
+	float axisDistance = this->geometricParameters.axisLength / this->geometricParameters.axisSectionNr;
+	for (int i = 0; i < axisPointNr; i++) {
+		axisPoints[i] = -this->geometricParameters.axisLength / 2 + i * axisDistance;
+	}
+
+	axisSectionLengths = new float[this->geometricParameters.axisSectionNr];
+	for (int i = 0; i < this->geometricParameters.axisSectionNr; i++) {
 		axisSectionLengths[i] = axisPoints[i + 1] - axisPoints[i];
 	}
 
-	this->volume = (PI * radiusLength * radiusLength * axisLength);
+	this->volume = (PI * this->geometricParameters.radiusLength * this->geometricParameters.radiusLength * this->geometricParameters.axisLength);
+
+	//TODO: special section for heat transfer at edge for cylinder surface
+#ifdef MAGIC_NUMBER
+	radiusSectionLengths[this->geometricParameters.radiusSectionNr] = axisSectionLengths[this->geometricParameters.axisSectionNr - 1] * MAGIC_NUMBER;
+#else
+	radiusSectionLengths[this->geometricParameters.radiusSectionNr] = [this]() -> float {
+		float r = radiusPoints[radiusPointNr - 1];
+		float dr = r - radiusPoints[radiusPointNr - 2];
+
+		return  dr * (1 - dr / (2 * r));
+		}();
+#endif // MAGIC_NUMBER	
 }
 
 void GeometricProperties::destroy() {
@@ -66,6 +71,11 @@ void GeometricProperties::destroy() {
 	if (radiusSectionLengths != nullptr) {
 		delete[] radiusSectionLengths;
 		radiusSectionLengths = nullptr;
+	}
+
+	if (radiusFactor != nullptr) {
+		delete[] radiusFactor;
+		radiusFactor = nullptr;
 	}
 
 	if (axisPoints != nullptr) {

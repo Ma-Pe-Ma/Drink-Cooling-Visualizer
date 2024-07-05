@@ -47,7 +47,7 @@ private:
 	//enum for end type (int used because of imgui) 0 - targettemperature, 1 - timespan
 	int endType = 0;
 
-	GeometricProperties geometricProperties = GeometricProperties(RADIUS_LENGTH, AXIS_LENGTH, RADIUS_SECTION_NR, AXIS_SECTION_NR, SECTION_ANGLE);
+	GeometricProperties geometricProperties = GeometricProperties({ RADIUS_LENGTH, AXIS_LENGTH, RADIUS_SECTION_NR, AXIS_SECTION_NR, SECTION_ANGLE });
 	ProcessProperties processProperties = ProcessProperties(INITIAL_TEMPERATURE, ENVIRONMENT_TEMPERATURE, TARGET_TIME_SPAN, SNAPSHOT_DELTA_TIME, TIME_STEP);
 	MaterialProperties materialProperties = MaterialProperties(HEAT_CAPACITY, DENSITY, HEAT_CONDUCTIVITY, HEAT_TRANSFER_COEFFICIENT);
 	

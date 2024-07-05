@@ -12,14 +12,16 @@ void Drawing::setGeometricProperties(GeometricProperties* geometricProperties) {
 void Drawing::update() {
 	this->destroy();
 	glGenVertexArrays(1, &vao);
+	
+	GeometricParameters geometricParameters = geometricProperties->getGeometricParameters();
 
-	int radiusSectionNr = geometricProperties->getRadiusSectionNr();
-	int axisSectionNr = geometricProperties->getAxisSectiontNr();
+	int radiusSectionNr = geometricParameters.radiusSectionNr;
+	int axisSectionNr = geometricParameters.axisSectionNr;
 	int radiusPointNr = geometricProperties->getRadiusPointNr();
 	int axisPointNr= geometricProperties->getAxisPointNr();
 
 	int triangleIndiceNr = 6 * radiusSectionNr * axisSectionNr;
-	triangleIndices = new unsigned int[triangleIndiceNr];
+	unsigned int* triangleIndices = new unsigned int[triangleIndiceNr];
 
 	int k = 0;
 	for (int j = 0; j < axisSectionNr; j++) {
@@ -40,10 +42,9 @@ void Drawing::update() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, triangleEbo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * triangleIndiceNr, triangleIndices, GL_STATIC_DRAW);
 	delete[] triangleIndices;
-	triangleIndices = nullptr;
 
 	int lineIndiceNr = (axisPointNr + radiusPointNr) * 2;
-	lineIndices = new unsigned int[lineIndiceNr];
+	unsigned int* lineIndices = new unsigned int[lineIndiceNr];
 
 	k = 0;
 	for (int i = 0; i < radiusPointNr; i++) {
@@ -66,22 +67,20 @@ void Drawing::update() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lineEbo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * lineIndiceNr, lineIndices, GL_STATIC_DRAW);
 	delete[] lineIndices;
-	lineIndices = nullptr;
 
-	int sectionAngle = geometricProperties->getSectionAngle();
+	int sectionAngle = geometricParameters.sectionAngle;
 
 	otherSectionModelViewMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(float(sectionAngle)), glm::vec3(0, 1, 0));
 
 	//std::cout << "Drawing updated!";
 
-	unsigned int factor = geometricProperties->getFactor();
-	float radiusLength = geometricProperties->getRadiusLength();
+	float radiusLength = geometricParameters.radiusLength;
 
-	unsigned int topSectionNr = (int) (radiusLength * PI * sectionAngle / 180 * factor);
+	unsigned int topSectionNr = (int) (radiusLength * PI * sectionAngle / 180 * TOP_SECTION_DISCRETISATION_FACTOR);
 	unsigned int topPointNr = topSectionNr + 1;
 
 	int topFaceTriangleIndiceNr = topSectionNr * 3 + 6 * (radiusSectionNr - 1) * topSectionNr;
-	topFaceTriangleIndices = new unsigned int[topFaceTriangleIndiceNr];
+	unsigned int* topFaceTriangleIndices = new unsigned int[topFaceTriangleIndiceNr];
 
 	k = 0;
 	for (int i = 0; i < topSectionNr; i++) {
@@ -109,10 +108,9 @@ void Drawing::update() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, topFaceTriangleEbo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * topFaceTriangleIndiceNr, topFaceTriangleIndices, GL_STATIC_DRAW);
 	delete[] topFaceTriangleIndices;
-	topFaceTriangleIndices = nullptr;
 
 	int topFaceLineIndiceNr = topSectionNr * (radiusPointNr - 1) * 2;
-	topFaceLineIndices = new unsigned int[topFaceLineIndiceNr];
+	unsigned int* topFaceLineIndices = new unsigned int[topFaceLineIndiceNr];
 
 	k = 0;
 	for (int i = 1; i < radiusPointNr; i++) {
@@ -131,9 +129,8 @@ void Drawing::update() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, topFaceLineEbo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * topFaceLineIndiceNr, topFaceLineIndices, GL_STATIC_DRAW);
 	delete[] topFaceLineIndices;
-	topFaceLineIndices = nullptr;
 
-	float axisLength = geometricProperties->getAxisLength();
+	float axisLength = geometricParameters.axisLength;
 
 	topFaceModelViewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0, axisLength / 2, 0));
 	topFaceModelViewMatrix = glm::rotate(topFaceModelViewMatrix, glm::radians(sectionAngle / 2.0f - 90), glm::vec3(0, 1, 0));
@@ -144,7 +141,7 @@ void Drawing::update() {
 	bottomFaceModelViewMatrix = glm::rotate(bottomFaceModelViewMatrix, glm::radians(-90.0f), glm::vec3(1, 0, 0));
 
 	int sideTriangleIndiceNr = 6 * axisSectionNr * topSectionNr;
-	sideTriangleIndices = new unsigned int[sideTriangleIndiceNr];
+	unsigned int* sideTriangleIndices = new unsigned int[sideTriangleIndiceNr];
 
 	k = 0;
 	for (int i = 0; i < axisSectionNr; i++) {
@@ -164,10 +161,9 @@ void Drawing::update() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sideTriangleEbo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * sideTriangleIndiceNr, sideTriangleIndices, GL_STATIC_DRAW);
 	delete[] sideTriangleIndices;
-	sideTriangleIndices = nullptr;
 
 	int sideLineIndiceNr = axisPointNr * topSectionNr * 2;
-	sideLineIndices = new unsigned int[sideLineIndiceNr];
+	unsigned int* sideLineIndices = new unsigned int[sideLineIndiceNr];
 	
 	k = 0;
 	for (int i = 0; i < axisPointNr; i++) {
@@ -186,7 +182,6 @@ void Drawing::update() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sideLineEbo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * sideLineIndiceNr, sideLineIndices, GL_STATIC_DRAW);
 	delete[] sideLineIndices;
-	sideLineIndices = nullptr;
 }
 
 void Drawing::setCameraDistance(float cameraDistance) {
@@ -210,38 +205,8 @@ void Drawing::determineCameraMatrix() {
 	cameraMatrix = glm::lookAt(position, position + direction, glm::vec3(0, 1, 0));
 }
 
-void Drawing::destroy() {
-	if (triangleIndices != nullptr) {
-		delete[] triangleIndices;
-		triangleIndices = nullptr;
-	}	
-
-	if (lineIndices != nullptr) {
-		delete[] lineIndices;
-		lineIndices = nullptr;
-	}
-
-	if (topFaceTriangleIndices != nullptr) {
-		delete[] topFaceTriangleIndices;
-		topFaceTriangleIndices = nullptr;
-	}	
-
-	if (topFaceLineIndices != nullptr) {
-		delete[] topFaceLineIndices;
-		topFaceLineIndices = nullptr;
-	}	
-
-	if (sideTriangleIndices != nullptr) {
-		delete[] sideTriangleIndices;
-		sideTriangleIndices = nullptr;
-	}	
-
-	if (sideLineIndices != nullptr) {
-		delete[] sideLineIndices;
-		sideLineIndices = nullptr;
-	}	
-
-	glDeleteVertexArrays(1, &vao);
+void Drawing::destroy() {	
+	glBindVertexArray(vao);
 	glDeleteBuffers(1, &triangleEbo);
 	glDeleteBuffers(1, &lineEbo);
 
@@ -250,4 +215,6 @@ void Drawing::destroy() {
 
 	glDeleteBuffers(1, &sideTriangleEbo);
 	glDeleteBuffers(1, &sideLineEbo);
+	glBindVertexArray(0);
+	glDeleteVertexArrays(1, &vao);
 }

@@ -1,8 +1,6 @@
 #include "Drawer.h"
 #include <Shader.h>
 
-#include <tinycolormap.hpp>
-
 #include "DrinkCooling.h"
 
 void Drawer::initialize(int imguiWidth) {
@@ -10,22 +8,12 @@ void Drawer::initialize(int imguiWidth) {
 
 	Shader mapShader = Shader("./resources/Map.vs", "./resources/Map.fs");
 	mapShader.use();
-	
-	//Create framebuffer for colored heatmap
-	unsigned int framebuffer;
-	glGenFramebuffers(1, &framebuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
 	int colormapWidth = 3 * imguiWidth / 4;
 	glViewport(0, 0, colormapWidth, colormapWidth / 10);
 
 	//Create texturebuffer and the texture where the heatmap will be saved
-	glGenTextures(1, &heatMapTextureColorBuffer);
-	glBindTexture(GL_TEXTURE_2D, heatMapTextureColorBuffer);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, colormapWidth, colormapWidth / 10, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, heatMapTextureColorBuffer, 0);
+	glGenTextures(colors.size(), heatMapTextureColorBuffer);
 
 	//create the vertices for the heatmap (position + color)
 	const int numberOfSquares = 20;
@@ -35,33 +23,13 @@ void Drawer::initialize(int imguiWidth) {
 	int k = 0;
 	for (int i = 0; i < numberOfSquares + 1; i++) {
 		float factor = float(i) / float(numberOfSquares);
-		const tinycolormap::Color color = tinycolormap::GetColor(factor, tinycolormap::ColormapType::Viridis);
 
 		for (int j = 0; j < 2; j++) {
 			vertexArray[5 * k + 0] = 2.0f * i / numberOfSquares - 1.0f;
 			vertexArray[5 * k + 1] = 2.0f * j - 1.0f;
-
-			vertexArray[5 * k + 2] = float(color.r());
-			vertexArray[5 * k + 3] = float(color.g());
-			vertexArray[5 * k + 4] = float(color.b());
-
 			k++;
 		}
 	}
-
-	//create vao, vbo and ebo for the heatmap
-	unsigned int vao;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-
-	unsigned int vbo;
-	glGenBuffers(1, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertexArraySize, vertexArray, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(0 * sizeof(float)));
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
-	glEnableVertexAttribArray(1);
 
 	int eboSize = numberOfSquares * 6;
 	unsigned int* eboArray = new unsigned int[eboSize];
@@ -79,25 +47,71 @@ void Drawer::initialize(int imguiWidth) {
 		k++;
 	}
 
-	unsigned int ebo;
-	glGenBuffers(1, &ebo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * eboSize, eboArray, GL_STATIC_DRAW);
 
-	//draw the heatmap to the framebuffer and to the attached texture
-	glDrawElements(GL_TRIANGLES, numberOfSquares * 6, GL_UNSIGNED_INT, 0);
 
-	//delete vao, ebo, vao
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glDeleteBuffers(1, &vbo);
-	glDeleteBuffers(1, &ebo);
-	glDeleteVertexArrays(1, &vao);
-	glDeleteFramebuffers(1, &framebuffer);
+	for (int c = 0; c < colors.size(); c++) {
+		//Create framebuffer for colored heatmap
+		unsigned int framebuffer;
+		glGenFramebuffers(1, &framebuffer);
+		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+		glBindTexture(GL_TEXTURE_2D, heatMapTextureColorBuffer[c]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, colormapWidth, colormapWidth / 10, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, heatMapTextureColorBuffer[c], 0);
+
+		auto colorType = std::get<0>(colors[c]);
+
+		k = 0;
+		for (int i = 0; i < numberOfSquares + 1; i++) {
+			float factor = float(i) / float(numberOfSquares);
+			const tinycolormap::Color color = tinycolormap::GetColor(factor, colorType);
+
+			for (int j = 0; j < 2; j++) {
+				vertexArray[5 * k + 2] = float(color.r());
+				vertexArray[5 * k + 3] = float(color.g());
+				vertexArray[5 * k + 4] = float(color.b());
+
+				k++;
+			}
+		}
+
+		//create vao, vbo and ebo for the heatmap
+		unsigned int vao;
+		glGenVertexArrays(1, &vao);
+		glBindVertexArray(vao);
+
+		unsigned int vbo;
+		glGenBuffers(1, &vbo);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertexArraySize, vertexArray, GL_STATIC_DRAW);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(0 * sizeof(float)));
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
+		glEnableVertexAttribArray(1);
+
+		unsigned int ebo;
+		glGenBuffers(1, &ebo);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * eboSize, eboArray, GL_STATIC_DRAW);
+
+		//draw the heatmap to the framebuffer and to the attached texture
+		glDrawElements(GL_TRIANGLES, numberOfSquares * 6, GL_UNSIGNED_INT, 0);
+
+		//delete vao, ebo, vao
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glDeleteBuffers(1, &vbo);
+		glDeleteBuffers(1, &ebo);
+		glDeleteVertexArrays(1, &vao);
+
+		glDeleteFramebuffers(1, &framebuffer);
+	}
 
 	delete[] vertexArray;
 	vertexArray = nullptr;
 	delete[] eboArray;
-	eboArray = nullptr;	
+	eboArray = nullptr;
 }
 
 void Drawer::updateProjectionMatrix(int x, int y) {
@@ -220,5 +234,5 @@ void Drawer::drawSide(std::shared_ptr<Drawing> drawing, std::shared_ptr<Snapshot
 
 Drawer::~Drawer()
 {
-	glDeleteTextures(1, &heatMapTextureColorBuffer);
+	glDeleteTextures(colors.size(), heatMapTextureColorBuffer);
 }

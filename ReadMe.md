@@ -42,7 +42,7 @@ You can manipulate the camera at any time. The camare can move in a cylindrical 
 
 After setting up the process, press start and the calculation begins. The length of the calculation depends on the geometry/time discretization and on the temperature conditions, obviously. The default process should only take a moment to finish.
 
-When post-processing, you can set the elapsed time of the selected process and the heat distribution at the specified time is visualized then. Also a [viridis](https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html) heat map is generated which helps you to read the required temperature values.
+When post-processing, you can set the elapsed time of the selected process and the heat distribution at the specified time is visualized then. Also, multiple type of heat maps can be generated which help you to read the required temperature values.
 
 The temperature-time distribution of the process is also shown to the user as a plot.
 

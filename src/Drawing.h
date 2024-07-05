@@ -11,15 +11,6 @@
 class Drawing {
 private:
 	GeometricProperties* geometricProperties;
-
-	unsigned int* triangleIndices = nullptr;
-	unsigned int* lineIndices = nullptr;
-
-	unsigned int* topFaceTriangleIndices = nullptr;
-	unsigned int* topFaceLineIndices = nullptr;
-
-	unsigned int* sideTriangleIndices = nullptr;
-	unsigned int* sideLineIndices = nullptr;;
 	
 	//Drawing properties
 	bool vertexSwitch = false;
@@ -61,7 +52,6 @@ private:
 
 	glm::mat4 topFaceModelViewMatrix;
 	glm::mat4 bottomFaceModelViewMatrix;
-
 public:
 	~Drawing();
 	void setGeometricProperties(GeometricProperties* geometricProperties);

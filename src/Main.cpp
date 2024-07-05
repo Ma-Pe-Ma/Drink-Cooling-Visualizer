@@ -35,7 +35,7 @@ int main() {
 		if (work_time.count() < 1000.0f / 30) {
 			std::chrono::duration<double, std::milli> delta_ms(1000.0f / 30 - work_time.count());
 			auto delta_ms_duration = std::chrono::duration_cast<std::chrono::milliseconds>(delta_ms);
-			//std::cout<<"Sleep for: "<<delta_ms_duration.count()<<std::endl;
+			//std::cout << "Sleep for: " << delta_ms_duration.count() << std::endl;
 			std::this_thread::sleep_for(std::chrono::milliseconds(delta_ms_duration.count()));
 		}
 

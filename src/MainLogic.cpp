@@ -105,45 +105,50 @@ void MainLogic::update() {
 
 			ImGui::Text("Geometry properties");
 
-			int* radiusNr = selectedShared->getGeometricProperties()->getRadiusNrGUI();
-			if (ImGui::InputInt("Radius discretization number [-]", radiusNr, 0, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
-				if (*radiusNr < 0) {
-					*radiusNr = 1;
+			GeometricParameters& geometricParameters = selectedShared->getGeometricProperties()->getGUIGeometricParameters();
+
+			int* radiusSectionNr = &geometricParameters.radiusSectionNr;
+			if (ImGui::InputInt("Radius discretization number [-]", radiusSectionNr, 0, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
+				if (*radiusSectionNr < 1) {
+					*radiusSectionNr = 1;
 				}
 
 				selectedShared->updateGeometry();
 			}
 
-			int* axisNr = selectedShared->getGeometricProperties()->getAxisNrGUI();
-			if (ImGui::InputInt("Axis discretization number [-]", axisNr, 0, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
-				if (*axisNr < 0) {
-					*axisNr = 1;
+			int* axisSectionNr = &geometricParameters.axisSectionNr;
+			if (ImGui::InputInt("Axis discretization number [-]", axisSectionNr, 0, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
+				if (*axisSectionNr < 1) {
+					*axisSectionNr = 1;
+				}
+				else {
+					*axisSectionNr += *axisSectionNr % 2;
 				}
 
 				selectedShared->updateGeometry();
 			}
 
-			float* radiuslength = selectedShared->getGeometricProperties()->getRadiusLengthGUI();
+			float* radiuslength = &geometricParameters.radiusLength;
 			if (ImGui::InputFloat("Radius length [mm]", radiuslength, 0.0f, 50.0f, "%.1f", ImGuiInputTextFlags_EnterReturnsTrue)) {
-				if (*radiuslength < 0) {
+				if (*radiuslength < 1) {
 					*radiuslength = 1;
 				}
 
 				selectedShared->updateGeometry();
 			}
 
-			float* axisLength = selectedShared->getGeometricProperties()->getAxisLengthGUI();
+			float* axisLength = &geometricParameters.axisLength;
 			if (ImGui::InputFloat("Axis length [mm]", axisLength, 0.0f, 100.0f, "%.1f", ImGuiInputTextFlags_EnterReturnsTrue)) {
-				if (*axisLength < 0) {
-					*axisLength = 1;
+				if (*axisLength < 1) {
+					*axisLength = 2;
 				}
 
 				selectedShared->updateGeometry();
 			}
 
-			int* sectionAngle = selectedShared->getGeometricProperties()->getSectionAngleGUI();
+			int* sectionAngle = &geometricParameters.sectionAngle;
 			if (ImGui::InputInt(u8"Section angle [°]", sectionAngle, 0, 180, ImGuiInputTextFlags_EnterReturnsTrue)) {
-				if (*sectionAngle < 0) {
+				if (*sectionAngle < 1) {
 					*sectionAngle = 1;
 				}
 				else if (*sectionAngle > 180) {
@@ -208,6 +213,45 @@ void MainLogic::update() {
 
 		std::shared_ptr<Drawing> drawing = selectedShared->getDrawing();
 		ImGui::Text("Drawing Properties");
+
+		if (currentState > 0) {
+			ImGui::BeginDisabled();
+		}
+
+		int* colorindexPointer = selectedShared->getProcessProperties()->getColorIndexPointer();
+		float h = ImGui::GetTextLineHeight();
+		ImVec2 cursorPos = ImGui::GetCursorScreenPos();
+		if (ImGui::BeginCombo("Heatmap", "")) {
+			for (int c = 0; c < Drawer::colors.size(); c++) {
+				bool isSelected = (c == *colorindexPointer);
+				if (ImGui::Selectable(std::get<1>(Drawer::colors[c]).c_str(), isSelected)) {
+					*colorindexPointer = c;
+					selectedShared->updateGeometry();
+				}
+
+				if (isSelected) {
+					ImGui::SetItemDefaultFocus();
+				}					
+
+				ImGui::SameLine();
+				ImGui::Image((void*)(intptr_t)drawer->getHeatMapTextureColorBuffer(c), ImVec2(h, h), ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f));
+			}
+
+			ImGui::EndCombo();
+		}
+
+		ImVec2 backupPos = ImGui::GetCursorScreenPos();
+		ImGuiStyle& style = ImGui::GetStyle();
+		ImGui::SetCursorScreenPos(ImVec2(cursorPos.x + style.FramePadding.x, cursorPos.y + style.FramePadding.y));;
+		ImGui::Image((void*)(intptr_t)drawer->getHeatMapTextureColorBuffer(*colorindexPointer), ImVec2(h, h), ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f));
+		ImGui::SameLine();
+		ImGui::Text(std::get<1>(Drawer::colors[*colorindexPointer]).c_str());
+		ImGui::SetCursorScreenPos(backupPos);
+
+		if (currentState > 0) {
+			ImGui::EndDisabled();
+		}
+
 		if (ImGui::SliderFloat("Camera distance [mm]", drawing->getCameraDistancePointer(), 5, 100, "%.1f")) {
 			drawing->setCameraDistance(*drawing->getCameraDistancePointer());
 		}
@@ -241,7 +285,7 @@ void MainLogic::update() {
 
 			const int colorMapWidth = windowing->getImguiWidth() * 3 / 4;
 
-			ImGui::Image((void*)(intptr_t) drawer->getHeatMapTextureColorBuffer(), ImVec2(colorMapWidth, colorMapWidth / 10), ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f));
+			ImGui::Image((void*)(intptr_t) drawer->getHeatMapTextureColorBuffer(*colorindexPointer), ImVec2(colorMapWidth, colorMapWidth / 10), ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f));
 			ImGui::SameLine();
 			if (ImGui::IsItemHovered()) {
 				ImVec2 mousePosition = ImGui::GetMousePos();

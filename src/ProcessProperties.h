@@ -16,6 +16,7 @@ class ProcessProperties {
 	float resultTemperature;
 	float resultTimeSpan;
 
+	int colorIndex = 0;
 public:
 	ProcessProperties(float, float, int, int, float);
 	void update();
@@ -69,6 +70,10 @@ public:
 
 	void setResultTimeSpan(float resultTimeSpan) {
 		this->resultTimeSpan = resultTimeSpan;
+	}
+
+	int* getColorIndexPointer() {
+		return &colorIndex;
 	}
 };
 #endif

@@ -36,7 +36,7 @@ class Snapshot {
 	GeometricProperties* geometricProperties;
 	int time;
 public:
-	Snapshot(float**&, float, float, float, int, GeometricProperties*);
+	Snapshot(float**&, float, float, float, int, GeometricProperties*, int);
 	~Snapshot();
 
 	void generateBuffers();

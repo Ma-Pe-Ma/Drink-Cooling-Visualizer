@@ -35,8 +35,10 @@ void Calculating::update() {
 		}
 	}
 
-	snapshots->push_back(std::make_shared<Snapshot>(previousHeatMap, *processProperties->getInitialTemperaturePointer(), *processProperties->getInitialTemperaturePointer(), *processProperties->getEnvironmentTemperaturePointer(), 0, geometricProperties));
-	(*(snapshots))[0]->generateBuffers();
+	auto initSnapshot = std::make_shared<Snapshot>(previousHeatMap, *processProperties->getInitialTemperaturePointer(), *processProperties->getInitialTemperaturePointer(), *processProperties->getEnvironmentTemperaturePointer(), 0, geometricProperties, *processProperties->getColorIndexPointer());
+	initSnapshot->generateBuffers();
+	snapshots->push_back(initSnapshot);
+
 	//std::cout << "Calculating updated!" << std::endl;
 }
 
@@ -122,7 +124,7 @@ void Calculating::calculateTargetTemperature() {
 			float averageTemp = getAverageTemperature(previousHeatMap);
 			//std::cout << "averageTemp: " << averageTemp << ", target: " << targetTemperature << std::endl;
 
-			snapshots->push_back(std::make_shared<Snapshot>(previousHeatMap, averageTemp, *processProperties->getInitialTemperaturePointer(), *processProperties->getEnvironmentTemperaturePointer(), ellapsedSecs, geometricProperties));
+			snapshots->push_back(std::make_shared<Snapshot>(previousHeatMap, averageTemp, *processProperties->getInitialTemperaturePointer(), *processProperties->getEnvironmentTemperaturePointer(), ellapsedSecs, geometricProperties, *processProperties->getColorIndexPointer()));
 
 			if (averageTemp < targetTemperature) {
 				processProperties->setResultTimeSpan(ellapsedSecs);
@@ -162,7 +164,7 @@ void Calculating::calculateTimeSpan() {
 			//std::cout << "currentTime: " << currentTime << ", ellapsedSecs: " << ellapsedSecs << std::endl;
 			float averageTemp = getAverageTemperature(previousHeatMap);
 
-			snapshots->push_back(std::make_shared<Snapshot>(previousHeatMap, averageTemp, *processProperties->getInitialTemperaturePointer(), *processProperties->getEnvironmentTemperaturePointer(), ellapsedSecs, geometricProperties));
+			snapshots->push_back(std::make_shared<Snapshot>(previousHeatMap, averageTemp, *processProperties->getInitialTemperaturePointer(), *processProperties->getEnvironmentTemperaturePointer(), ellapsedSecs, geometricProperties, *processProperties->getColorIndexPointer()));
 
 			if (currentTime >= targetTimeSpan) {
 				processProperties->setResultTemperature(averageTemp);
@@ -195,6 +197,7 @@ void Calculating::calculateTimeStep() {
 
 	float* radiusPoints = geometricProperties->getRadiusPointsPointer();
 	float* axisPoints = geometricProperties->getAxisPointsPointer();
+	float* radiusFactor = geometricProperties->getRadiusFactor();
 
 	int axisPointNr = geometricProperties->getAxisPointNr();
 	int radiusPointNr = geometricProperties->getRadiusPointNr();
@@ -207,12 +210,12 @@ void Calculating::calculateTimeStep() {
 
 			//transfer at the side of the cylinder
 			if (i == (radiusPointNr - 1)) {
+				//TODO: calculate properly
 				radComp = -transferConstant * (previousHeatMap[i][j] - environmentTemperature) / radiusSectionLengths[i] * timeStep;
 			}
 			//conduction inside the material
 			else {
-				float temperatureDifferenceBydr = (previousHeatMap[i + 1][j] - previousHeatMap[i][j]) / radiusSectionLengths[i];
-				radComp = conductionConstant * temperatureDifferenceBydr / (radiusPoints[i] + radiusSectionLengths[i]) * timeStep;
+				radComp = conductionConstant * (previousHeatMap[i + 1][j] - previousHeatMap[i][j]) * radiusFactor[i] * timeStep;
 			}
 
 			//calculating bottom part
@@ -242,9 +245,7 @@ void Calculating::calculateTimeStep() {
 		}
 	}
 
-	float** temp = previousHeatMap;
-	previousHeatMap = currentHeatMap;
-	currentHeatMap = temp;
+	std::swap(previousHeatMap, currentHeatMap);
 }
 
 float Calculating::getAverageTemperature(float** heatMap) {
