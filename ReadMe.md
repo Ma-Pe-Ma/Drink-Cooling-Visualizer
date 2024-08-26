@@ -2,7 +2,7 @@
 
 ![status](https://badgen.net/badge/status/finished/green) ![license](https://badgen.net/github/license/Ma-Pe-Ma/Drink-Cooling-Visualizer)
 
-![browser](https://badgen.net/badge/browser/working/green) ![desktop](https://badgen.net/badge/desktop/working/green) 
+![WASM](https://github.com/Ma-Pe-Ma/Drink-Cooling-Visualizer/actions/workflows/cmake-wasm.yml/badge.svg) ![Windows](https://github.com/Ma-Pe-Ma/Drink-Cooling-Visualizer/actions/workflows/cmake-windows.yml/badge.svg) ![Linux](https://github.com/Ma-Pe-Ma/Drink-Cooling-Visualizer/actions/workflows/cmake-linux.yml/badge.svg) 
 
 A simple visualizer and numerical solver for determining the temperature distribution inside a can of drink during a cooling process.
 

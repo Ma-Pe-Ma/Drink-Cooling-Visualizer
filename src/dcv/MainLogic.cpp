@@ -38,7 +38,7 @@ void MainLogic::update() {
 
 	ImGui::Begin("Drink Cooling Visualizer", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
 
-	if (ImGui::BeginListBox(u8"Processes", ImVec2(0, 60))) {
+	if (ImGui::BeginListBox("Processes", ImVec2(0, 60))) {
 		for (auto it = drinkCoolings.begin(); it != drinkCoolings.end(); ++it) {
 			int index = std::distance(drinkCoolings.begin(), it);
 
@@ -147,7 +147,7 @@ void MainLogic::update() {
 			}
 
 			int* sectionAngle = &geometricParameters.sectionAngle;
-			if (ImGui::InputInt(u8"Section angle [°]", sectionAngle, 0, 180, ImGuiInputTextFlags_EnterReturnsTrue)) {
+			if (ImGui::InputInt(reinterpret_cast<const char*>(u8"Section angle [°]"), sectionAngle, 0, 180, ImGuiInputTextFlags_EnterReturnsTrue)) {
 				if (*sectionAngle < 1) {
 					*sectionAngle = 1;
 				}
@@ -160,7 +160,7 @@ void MainLogic::update() {
 
 			MaterialProperties* materialProperties = selectedShared->getMaterialProperties();
 			ImGui::Text("Material properties");
-			if (ImGui::InputFloat(u8"Heat capacity [J / (kg * °C)]", materialProperties->getHeatcapacityPointer(), 0, 1000, "%.1f")) {
+			if (ImGui::InputFloat(reinterpret_cast<const char*>(u8"Heat capacity [J / (kg * °C)]"), materialProperties->getHeatcapacityPointer(), 0, 1000, "%.1f")) {
 				selectedShared->updateMaterialProperties();
 			}
 
@@ -168,26 +168,26 @@ void MainLogic::update() {
 				selectedShared->updateMaterialProperties();
 			}
 
-			if (ImGui::InputFloat(u8"Thermal conductivity [W / (m * °C)]", materialProperties->getHeatConductivityPointer(), 0, 1000, "%.1f")) {
+			if (ImGui::InputFloat(reinterpret_cast<const char*>(u8"Thermal conductivity [W / (m * °C)]"), materialProperties->getHeatConductivityPointer(), 0, 1000, "%.1f")) {
 				selectedShared->updateMaterialProperties();
 			}
 
-			if (ImGui::InputFloat(u8"Heat transfer coeff. [W / (m^2 * °C)]", materialProperties->getHeatTransferCoefficientPointer(), 0, 1000, "%.1f")) {
+			if (ImGui::InputFloat(reinterpret_cast<const char*>(u8"Heat transfer coeff. [W / (m^2 * °C)]"), materialProperties->getHeatTransferCoefficientPointer(), 0, 1000, "%.1f")) {
 				selectedShared->updateMaterialProperties();
 			}
 
 			ProcessProperties* processProperties = selectedShared->getProcessProperties();
 			ImGui::Text("Temperature properties");
-			if (ImGui::InputFloat(u8"Initial temperature [°C]", processProperties->getInitialTemperaturePointer(), -50.0f, 100.0f, "%.1f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+			if (ImGui::InputFloat(reinterpret_cast<const char*>(u8"Initial temperature [°C]"), processProperties->getInitialTemperaturePointer(), -50.0f, 100.0f, "%.1f", ImGuiInputTextFlags_EnterReturnsTrue)) {
 				selectedShared->updateProcessProperties();
 			}
-			if (ImGui::InputFloat(u8"Environment temperture [°C]", processProperties->getEnvironmentTemperaturePointer(), -50.0f, 100.0f, "%.1f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+			if (ImGui::InputFloat(reinterpret_cast<const char*>(u8"Environment temperture [°C]"), processProperties->getEnvironmentTemperaturePointer(), -50.0f, 100.0f, "%.1f", ImGuiInputTextFlags_EnterReturnsTrue)) {
 				selectedShared->updateProcessProperties();
 			}
 
 			if (*selectedShared->getEndTypePointer() == 0) {
 				float* targeTemperature = processProperties->getTargetTemperaturePointer();
-				if (ImGui::InputFloat(u8"Target tempreature [°C]", targeTemperature, -50.0f, 100.0f, "%.1f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+				if (ImGui::InputFloat(reinterpret_cast<const char*>(u8"Target tempreature [°C]"), targeTemperature, -50.0f, 100.0f, "%.1f", ImGuiInputTextFlags_EnterReturnsTrue)) {
 					selectedShared->updateProcessProperties();
 				};
 			}
@@ -256,7 +256,7 @@ void MainLogic::update() {
 			drawing->setCameraDistance(*drawing->getCameraDistancePointer());
 		}
 
-		if (ImGui::SliderFloat(u8"Camera angle [°]", drawing->getCameraAnglePointer(), 0, 360, "%.1f")) {
+		if (ImGui::SliderFloat(reinterpret_cast<const char*>(u8"Camera angle [°]"), drawing->getCameraAnglePointer(), 0, 360, "%.1f")) {
 			drawing->setCameraAngle(*drawing->getCameraAnglePointer());
 		}
 
@@ -279,7 +279,7 @@ void MainLogic::update() {
 				ImGui::Text(timeTaken.c_str());
 			}
 			else {
-				std::string resultTemperature = u8"Final temperature: " + floatToStringWithPrecision(processProperties->getResultTemperature()) + u8" °C";
+				std::string resultTemperature = reinterpret_cast<const char*>(u8"Final temperature: ") + floatToStringWithPrecision(processProperties->getResultTemperature()) + reinterpret_cast<const char*>(u8" °C");
 				ImGui::Text(resultTemperature.c_str());
 			}
 
@@ -299,7 +299,7 @@ void MainLogic::update() {
 
 				float temperature = environmentTemperature + (initialTemperature - environmentTemperature) * factor;
 
-				std::string pointedTemperature = "Temperature: " + floatToStringWithPrecision(temperature) + u8"°C";
+				std::string pointedTemperature = "Temperature: " + floatToStringWithPrecision(temperature) + reinterpret_cast<const char*>(u8"°C");
 
 				ImGui::BeginTooltip();
 				ImGui::Text(pointedTemperature.c_str());
@@ -319,15 +319,15 @@ void MainLogic::update() {
 
 			std::string snapshotTimeText = "Snapshot time: " + floatToStringWithPrecision(selectedShared->getCurrentSnapshotTime(), 0) + " s";
 			ImGui::Text(snapshotTimeText.c_str());
-			std::string snapshotAverageTempText = u8"Average temperature: " + floatToStringWithPrecision(selectedShared->getCurrentSnapshotAverateTemperature()) + u8" °C";
+			std::string snapshotAverageTempText = reinterpret_cast<const char*>(u8"Average temperature: ") + floatToStringWithPrecision(selectedShared->getCurrentSnapshotAverateTemperature()) + reinterpret_cast<const char*>(u8" °C");
 			ImGui::Text(snapshotAverageTempText.c_str());
 
-			std::string processTimeString = u8"(Calculation time: " + floatToStringWithPrecision(selectedShared->getProcessLength(), 1) + "s)";
+			std::string processTimeString = reinterpret_cast<const char*>(u8"(Calculation time: ") + floatToStringWithPrecision(selectedShared->getProcessLength(), 1) + reinterpret_cast<const char*>("s)");
 			ImGui::Text(processTimeString.c_str());
 
 			if (ImPlot::BeginPlot("Average temparature by time")) {
 				ImPlot::SetupLegend(ImPlotLocation_North | ImPlotLocation_East, ImPlotLegendFlags_Horizontal);
-				ImPlot::SetupAxes("Time [s]", u8"Temperature [°C]");
+				ImPlot::SetupAxes("Time [s]", reinterpret_cast<const char*>(u8"Temperature [°C]"));
 				ImPlot::PlotLine("T(t)", selectedShared->getSnapshotTimes(), selectedShared->getSnapshotAverageTemperatures(), selectedShared->getSnapshotSize());
 				ImPlot::EndPlot();
 			}

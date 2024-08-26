@@ -22,7 +22,7 @@ int main() {
 	mainLogic->setWindowing(windowing);
 
 	windowing->initialize();
-	mainLogic->initialize();	
+	mainLogic->initialize();
 
 	std::chrono::system_clock::time_point prevFrameStart = std::chrono::system_clock::now();
 

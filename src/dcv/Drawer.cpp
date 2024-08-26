@@ -4,9 +4,9 @@
 #include "DrinkCooling.h"
 
 void Drawer::initialize(int imguiWidth) {
-	shader = new Shader("./resources/Drink.vs", "./resources/Drink.fs");
+	shader = new Shader("./assets/Drink.vs", "./assets/Drink.fs");
 
-	Shader mapShader = Shader("./resources/Map.vs", "./resources/Map.fs");
+	Shader mapShader = Shader("./assets/Map.vs", "./assets/Map.fs");
 	mapShader.use();
 
 	int colormapWidth = 3 * imguiWidth / 4;
