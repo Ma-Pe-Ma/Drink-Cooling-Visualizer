@@ -39,7 +39,7 @@ void Windowing::initialize()
 
 #endif
 
-	window = glfwCreateWindow(screenWidth, screenHeight, u8"Drink Cooling Visualizer - Margitai Péter Máté", NULL, NULL);
+	window = glfwCreateWindow(screenWidth, screenHeight, reinterpret_cast<const char*>(u8"Drink Cooling Visualizer - Margitai Péter Máté"), NULL, NULL);
 	glfwSetWindowUserPointer(window, static_cast<void*>(this));
 	
 	//glfwSetWindowPosCallback(window, window_pos_callback);
@@ -127,12 +127,12 @@ void Windowing::initialize()
 
 	ImVector<ImWchar> ranges;
 	ImFontGlyphRangesBuilder builder;
-	builder.AddText(u8"áéíóöőúüű°");
+	builder.AddText(reinterpret_cast<const char*>(u8"áéíóöőúüű°"));
 
 	builder.AddRanges(io.Fonts->GetGlyphRangesDefault());
 	builder.BuildRanges(&ranges);
 
-	io.Fonts->AddFontFromFileTTF("./resources/Roboto-Medium.ttf", 13, nullptr, ranges.Data);
+	io.Fonts->AddFontFromFileTTF("./assets/Roboto-Medium.ttf", 13, nullptr, ranges.Data);
 	io.Fonts->Build();
 
 	//std::cout << "GL VERSION: " << glGetString(GL_VERSION) << std::endl;

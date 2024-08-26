@@ -352,5 +352,6 @@ MigrationBackup/
 .ionide/
 
 imgui.ini
-resources/*.ttf
+assets/*.ttf
+assets/*.rc
 CMakeSettings.json
